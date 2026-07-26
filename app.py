@@ -7,7 +7,7 @@ from models import init_db, add_log, get_logs, get_recent_logs, get_stats
 app = Flask(__name__)
 init_db()
 
-DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "sk-21b4ec37b4644a74a9a8d3bbd3c4a853")
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 DEEPSEEK_MODEL = "deepseek-v4-flash"
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 
