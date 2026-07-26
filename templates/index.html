@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sprint">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <title>Sprint - 学习打卡</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">Sprint</div>
+        <div class="nav-links">
+            <a href="/" class="active">打卡</a>
+            <a href="/history">历史</a>
+            <a href="/insights">AI 洞察</a>
+        </div>
+    </nav>
+
+    <main>
+        <h1>今日打卡</h1>
+        <form id="log-form">
+            <div class="form-group">
+                <label>日期</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label>学习科目</label>
+                <input type="text" id="subject" placeholder="如：Python、算法、英语..." required>
+            </div>
+            <div class="form-group">
+                <label>学习时长（小时）</label>
+                <input type="number" id="duration" step="0.5" min="0.1" max="24" placeholder="1.5" required>
+            </div>
+            <div class="form-group">
+                <label>学了什么</label>
+                <textarea id="content" rows="3" placeholder="记录今天学到的内容..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>感觉如何</label>
+                <div class="mood-selector">
+                    <button type="button" class="mood-btn" data-mood="😵">😵 疲惫</button>
+                    <button type="button" class="mood-btn" data-mood="😐">😐 一般</button>
+                    <button type="button" class="mood-btn" data-mood="😊">😊 不错</button>
+                    <button type="button" class="mood-btn" data-mood="🔥">🔥 超燃</button>
+                </div>
+                <input type="hidden" id="mood" value="😊">
+            </div>
+            <button type="submit" class="btn-primary">打卡 ✓</button>
+        </form>
+
+        <div id="msg" class="msg hidden"></div>
+    </main>
+
+    <script>
+        // 默认今天
+        document.getElementById('date').value = new Date().toISOString().slice(0, 10);
+
+        // 心情选择
+        document.querySelectorAll('.mood-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('mood').value = btn.dataset.mood;
+            });
+        });
+        // 默认选中"不错"
+        document.querySelector('.mood-btn[data-mood="😊"]').classList.add('selected');
+
+        // 提交
+        document.getElementById('log-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                date: document.getElementById('date').value,
+                subject: document.getElementById('subject').value,
+                duration_hours: parseFloat(document.getElementById('duration').value),
+                content: document.getElementById('content').value,
+                mood: document.getElementById('mood').value,
+            };
+            const msg = document.getElementById('msg');
+            try {
+                const res = await fetch('/api/log', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body),
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    msg.textContent = '打卡成功！继续加油 🏃';
+                    msg.className = 'msg success';
+                    document.getElementById('log-form').reset();
+                    document.getElementById('date').value = new Date().toISOString().slice(0, 10);
+                    document.querySelector('.mood-btn[data-mood="😊"]').click();
+                } else {
+                    msg.textContent = data.error || '提交失败';
+                    msg.className = 'msg error';
+                }
+            } catch (err) {
+                msg.textContent = '网络错误';
+                msg.className = 'msg error';
+            }
+        });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js');
+        }
+    </script>
+</body>
+</html>
