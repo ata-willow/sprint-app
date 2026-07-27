@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1628">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛵</text></svg>">
+  <title>日志 · Sprint</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="page-container">
+    <h2 style="color:var(--gold);font-family:var(--font-serif);letter-spacing:2px;margin-bottom:16px;" class="animate-in">📝 航海日志</h2>
+
+    <!-- 学习录入表单 -->
+    <div class="card animate-in animate-delay-1">
+      <div class="card-title">记录今日航行</div>
+      <form id="log-form" class="log-form">
+        <div class="form-group">
+          <label>日期</label>
+          <input type="date" id="log-date" required>
+        </div>
+        <div class="form-group">
+          <label>科目</label>
+          <select id="log-subject" required>
+            <option value="">选择科目...</option>
+            <option value="物理1">物理1</option>
+            <option value="统计">统计</option>
+            <option value="微积分BC">微积分BC</option>
+            <option value="物理C">物理C</option>
+            <option value="托福">托福</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>学习时长（小时）</label>
+          <input type="number" id="log-duration" step="0.5" min="0.5" max="12" placeholder="1.5" required>
+        </div>
+        <div class="form-group">
+          <label>学习内容</label>
+          <textarea id="log-content" rows="3" placeholder="今天学了什么..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>心情</label>
+          <div class="mood-selector" id="mood-selector">
+            <span class="mood-option" data-mood="😊">😊</span>
+            <span class="mood-option" data-mood="🤔">🤔</span>
+            <span class="mood-option" data-mood="😤">😤</span>
+            <span class="mood-option" data-mood="😴">😴</span>
+            <span class="mood-option" data-mood="😢">😢</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>顿悟时刻（可选）</label>
+          <textarea id="log-insight" rows="2" placeholder="突然想通的瞬间...⭐"></textarea>
+        </div>
+        <button type="submit" class="btn-submit">⚓ 记录航程</button>
+      </form>
+    </div>
+
+    <!-- 最近记录 -->
+    <div class="animate-in animate-delay-2">
+      <h3 style="color:var(--gold);font-size:0.9rem;letter-spacing:1px;margin-bottom:12px;">📋 最近记录</h3>
+      <div id="recent-logs">
+        {% for log in logs %}
+        <div class="log-item">
+          <div class="log-header">
+            <span class="log-subject">{{ log.subject }}</span>
+            <span class="log-date">{{ log.date }}</span>
+          </div>
+          {% if log.content %}
+          <div class="log-content">{{ log.content }}</div>
+          {% endif %}
+          <div class="log-meta">
+            <span>{{ log.duration_hours }}h</span>
+            <span>{{ log.mood or '' }}</span>
+            {% if log.insight %}
+            <span style="color:var(--gold-bright)">⭐ 顿悟</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+        {% if not logs %}
+        <p class="text-dim text-center" style="padding:20px;font-size:0.85rem;">还没有航行记录，开始记录吧！</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 顿悟时刻收藏区 -->
+    {% if insights %}
+    <div class="insight-collection animate-in animate-delay-3">
+      <h3 style="color:var(--gold-bright);font-size:0.9rem;letter-spacing:1px;margin-bottom:12px;">⭐ 顿悟时刻</h3>
+      {% for ins in insights %}
+      <div class="insight-gem">
+        <div class="gem-subject">{{ ins.subject }} · {{ ins.date }}</div>
+        <div class="gem-text">{{ ins.insight }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 底部导航 -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item"><span class="nav-icon">⛵</span><span class="nav-label">航海</span></a>
+    <a href="/log" class="nav-item active"><span class="nav-icon">📝</span><span class="nav-label">日志</span></a>
+    <a href="/route" class="nav-item"><span class="nav-icon">🧭</span><span class="nav-label">航线</span></a>
+    <a href="/star" class="nav-item"><span class="nav-icon">✨</span><span class="nav-label">星象</span></a>
+  </nav>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // 设置默认日期为今天
+    document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+
+    // 心情选择器
+    let selectedMood = '';
+    document.querySelectorAll('.mood-option').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedMood = el.dataset.mood;
+      });
+    });
+
+    // Toast
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // 提交表单
+    document.getElementById('log-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        date: document.getElementById('log-date').value,
+        subject: document.getElementById('log-subject').value,
+        duration_hours: document.getElementById('log-duration').value,
+        content: document.getElementById('log-content').value,
+        mood: selectedMood,
+        insight: document.getElementById('log-insight').value || null,
+      };
+
+      try {
+        const res = await fetch('/api/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const result = await res.json();
+        if (result.ok) {
+          showToast('⚓ 航程已记录！');
+          // 清空表单
+          document.getElementById('log-content').value = '';
+          document.getElementById('log-insight').value = '';
+          document.getElementById('log-duration').value = '';
+          document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
+          selectedMood = '';
+          // 2秒后刷新页面
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          showToast('记录失败：' + (result.error || '未知错误'));
+        }
+      } catch (err) {
+        showToast('网络错误，请重试');
+      }
+    });
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

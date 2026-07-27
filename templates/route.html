@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1628">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛵</text></svg>">
+  <title>航线 · Sprint</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="page-container">
+    <h2 style="color:var(--gold);font-family:var(--font-serif);letter-spacing:2px;margin-bottom:16px;" class="animate-in">🧭 航线图</h2>
+
+    <!-- 统计摘要 -->
+    <div class="stats-grid animate-in animate-delay-1">
+      <div class="stat-box">
+        <div class="stat-value">{{ stats.total_hours }}</div>
+        <div class="stat-label">总时长(h)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">{{ stats.streak }}</div>
+        <div class="stat-label">连续打卡</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">{{ stats.total_logs }}</div>
+        <div class="stat-label">总记录</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">{{ stats.by_subject|length }}</div>
+        <div class="stat-label">科目数</div>
+      </div>
+    </div>
+
+    <!-- 顿悟时刻 -->
+    {% if stats.insights %}
+    <div class="card animate-in animate-delay-2">
+      <div class="card-title">⭐ 顿悟时刻</div>
+      {% for ins in stats.insights %}
+      <div class="insight-gem" style="margin-bottom:8px;">
+        <div class="gem-subject">{{ ins.subject }} · {{ ins.date }}</div>
+        <div class="gem-text">{{ ins.insight }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 各科学习时长柱状图 -->
+    <div class="card animate-in animate-delay-2">
+      <div class="card-title">📊 各科学习时长</div>
+      {% set max_hours = stats.by_subject|map(attribute='hours')|max|default(1)|float %}
+      {% if max_hours == 0 %}{% set max_hours = 1 %}{% endif %}
+      <div class="bar-chart">
+        {% for s in stats.by_subject %}
+        {% set pct = ((s.hours / max_hours) * 100)|int %}
+        {% set css_class = {
+          '物理1': 'physics', '统计': 'statistics', '微积分BC': 'calculus',
+          '物理C': 'physicsc', '托福': 'toefl', '其他': 'other'
+        }.get(s.subject, 'other') %}
+        <div class="bar-row">
+          <span class="bar-label">{{ s.subject }}</span>
+          <div class="bar-track">
+            <div class="bar-fill {{ css_class }}" style="width:{{ pct }}%"></div>
+          </div>
+          <span class="bar-value">{{ s.hours }}h</span>
+        </div>
+        {% endfor %}
+        {% if not stats.by_subject %}
+        <p class="text-dim text-center" style="font-size:0.85rem;">暂无数据</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 各科占比 -->
+    {% if stats.by_subject %}
+    <div class="card animate-in animate-delay-3">
+      <div class="card-title">🥧 各科占比</div>
+      {% set total = stats.by_subject|map(attribute='hours')|sum %}
+      <div class="donut-chart" id="donut-chart"></div>
+      <div class="donut-legend">
+        {% set colors = ['#4a90d9', '#3db8a0', '#d4a574', '#9b59b6', '#e74c3c', '#7f8c8d'] %}
+        {% for s in stats.by_subject %}
+        <div class="legend-item">
+          <span class="legend-dot" style="background:{{ colors[loop.index0 % colors|length] }}"></span>
+          {{ s.subject }} {{ ((s.hours / total) * 100)|round(1) }}%
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 航点时间线 -->
+    <div class="card animate-in animate-delay-3">
+      <div class="card-title">🗺️ 航点时间线</div>
+      <div class="timeline">
+        {% for m in milestones %}
+        <div class="timeline-item {% if m.reached %}reached{% elif m.is_current %}current{% endif %}">
+          <div class="tl-name">{{ m.name }}</div>
+          <div class="tl-desc">{{ m.description }}</div>
+          {% if m.reached and m.reached_date %}
+          <div class="tl-date">✓ {{ m.reached_date }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item"><span class="nav-icon">⛵</span><span class="nav-label">航海</span></a>
+    <a href="/log" class="nav-item"><span class="nav-icon">📝</span><span class="nav-label">日志</span></a>
+    <a href="/route" class="nav-item active"><span class="nav-icon">🧭</span><span class="nav-label">航线</span></a>
+    <a href="/star" class="nav-item"><span class="nav-icon">✨</span><span class="nav-label">星象</span></a>
+  </nav>
+
+  <script>
+    // 环形图 - CSS conic-gradient
+    {% if stats.by_subject %}
+    (function() {
+      const data = {{ stats.by_subject | tojson }};
+      const total = data.reduce((s, d) => s + d.hours, 0);
+      const colors = ['#4a90d9', '#3db8a0', '#d4a574', '#9b59b6', '#e74c3c', '#7f8c8d'];
+      let gradParts = [];
+      let cumPct = 0;
+      data.forEach((d, i) => {
+        const pct = (d.hours / total) * 100;
+        gradParts.push(`${colors[i % colors.length]} ${cumPct}% ${cumPct + pct}%`);
+        cumPct += pct;
+      });
+      const el = document.getElementById('donut-chart');
+      if (el) {
+        el.style.background = `conic-gradient(${gradParts.join(', ')})`;
+        el.innerHTML = `<div class="donut-center"><div class="donut-total">${Math.round(total)}</div><div class="donut-label">总时长(h)</div></div>`;
+      }
+    })();
+    {% endif %}
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

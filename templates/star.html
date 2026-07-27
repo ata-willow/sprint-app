@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1628">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛵</text></svg>">
+  <title>星象 · Sprint</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="page-container">
+    <h2 style="color:var(--gold);font-family:var(--font-serif);letter-spacing:2px;margin-bottom:16px;" class="animate-in">✨ 星象观测</h2>
+
+    <!-- AI 分析区 -->
+    <div class="card insights-card animate-in animate-delay-1">
+      <div class="card-title">🔭 船长夜观星象</div>
+      <div id="star-insights">
+        <div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div></div>
+      </div>
+    </div>
+
+    <!-- 掌握度雷达 -->
+    <div class="card animate-in animate-delay-2">
+      <div class="card-title">📡 学科掌握度</div>
+      <div class="radar-bars">
+        {% set subject_targets = {'物理1': 175, '统计': 175, '微积分BC': 175, '物理C': 150, '托福': 120} %}
+        {% set bar_colors = {'物理1': '#4a90d9', '统计': '#3db8a0', '微积分BC': '#d4a574', '物理C': '#9b59b6', '托福': '#e74c3c'} %}
+        {% for s in stats.by_subject %}
+          {% set target = subject_targets.get(s.subject, 100) %}
+          {% set raw_pct = (s.hours / target) * 100 %}
+          {% set pct = [raw_pct, 100]|min|int %}
+          <div class="radar-item">
+            <div class="radar-label">
+              <span class="radar-name">{{ s.subject }}</span>
+              <span class="radar-pct">{{ pct }}%</span>
+            </div>
+            <div class="radar-track">
+              <div class="radar-fill" style="width:{{ pct }}%;background:{{ bar_colors.get(s.subject, '#7f8c8d') }}"></div>
+            </div>
+          </div>
+        {% endfor %}
+        {# 如果某科目没有记录，也显示出来 #}
+        {% for sub, target in subject_targets.items() %}
+          {% if sub not in stats.by_subject|map(attribute='subject')|list %}
+          <div class="radar-item">
+            <div class="radar-label">
+              <span class="radar-name">{{ sub }}</span>
+              <span class="radar-pct">0%</span>
+            </div>
+            <div class="radar-track">
+              <div class="radar-fill" style="width:0%;background:{{ bar_colors.get(sub, '#7f8c8d') }}"></div>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+        {% if not stats.by_subject %}
+        <p class="text-dim text-center" style="font-size:0.85rem;">开始学习后这里会显示各科掌握度</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 托福预估 -->
+    <div class="card toefl-card animate-in animate-delay-3">
+      <div class="card-title">🎯 托福预估</div>
+      {% set toefl_hours = 0 %}
+      {% for s in stats.by_subject %}
+        {% if s.subject == '托福' %}{% set toefl_hours = s.hours %}{% endif %}
+      {% endfor %}
+      {% set toefl_estimate = [80 + (toefl_hours * 0.5)|int, 120]|min %}
+      {% set toefl_raw_pct = (toefl_estimate / 110) * 100 %}
+      {% set toefl_pct = [toefl_raw_pct|int, 100]|min %}
+      <div class="toefl-score">{{ toefl_estimate }}</div>
+      <div class="toefl-target">目标：110+ | 已投入 {{ toefl_hours }}h</div>
+      <div class="toefl-progress">
+        <div class="toefl-progress-fill" style="width:{{ toefl_pct }}%"></div>
+      </div>
+    </div>
+
+    <!-- 顿悟时刻 -->
+    {% if stats.insights %}
+    <div class="card animate-in animate-delay-4">
+      <div class="card-title">⭐ 顿悟收藏</div>
+      {% for ins in stats.insights[:5] %}
+      <div class="insight-gem" style="margin-bottom:8px;">
+        <div class="gem-subject">{{ ins.subject }} · {{ ins.date }}</div>
+        <div class="gem-text">{{ ins.insight }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 统计概览 -->
+    <div class="card animate-in animate-delay-4">
+      <div class="card-title">📈 航行概览</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:0.85rem;">总学习时长</span>
+        <span style="color:var(--gold-bright);font-weight:600;">{{ stats.total_hours }}h</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:0.85rem;">连续打卡</span>
+        <span style="color:var(--gold-bright);font-weight:600;">{{ stats.streak }} 天 🔥</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-size:0.85rem;">总记录数</span>
+        <span style="color:var(--gold-bright);font-weight:600;">{{ stats.total_logs }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item"><span class="nav-icon">⛵</span><span class="nav-label">航海</span></a>
+    <a href="/log" class="nav-item"><span class="nav-icon">📝</span><span class="nav-label">日志</span></a>
+    <a href="/route" class="nav-item"><span class="nav-icon">🧭</span><span class="nav-label">航线</span></a>
+    <a href="/star" class="nav-item active"><span class="nav-icon">✨</span><span class="nav-label">星象</span></a>
+  </nav>
+
+  <script>
+    // 加载 AI 分析
+    fetch('/api/insights')
+      .then(r => r.json())
+      .then(data => {
+        const el = document.getElementById('star-insights');
+        if (data.insights && data.insights.length) {
+          el.innerHTML = data.insights.map(i => `<div class="insight-item">${i}</div>`).join('');
+        } else {
+          el.innerHTML = '<div class="insight-item">星空暂无新消息，持续航行会有更多启示。</div>';
+        }
+      })
+      .catch(() => {
+        document.getElementById('star-insights').innerHTML =
+          '<div class="insight-item">观星中，请稍后刷新。</div>';
+      });
+
+    // 掌握度进度条动画（延迟触发）
+    setTimeout(() => {
+      document.querySelectorAll('.radar-fill').forEach(el => {
+        const w = el.style.width;
+        el.style.width = '0%';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => { el.style.width = w; });
+        });
+      });
+    }, 300);
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
