@@ -11,26 +11,23 @@
 </head>
 <body>
   <div class="page-container">
-    <!-- 航海 Banner -->
+
+    <!-- ====== 航海 Banner - 帆船图片 ====== -->
     <div class="voyage-banner animate-in">
       <div class="banner-stars">
-        <span class="banner-star" style="left:10%;top:15%;animation-delay:0.5s"></span>
-        <span class="banner-star" style="left:25%;top:8%;animation-delay:1.2s"></span>
-        <span class="banner-star" style="left:40%;top:20%;animation-delay:0.8s"></span>
-        <span class="banner-star" style="left:55%;top:5%;animation-delay:2s"></span>
-        <span class="banner-star" style="left:70%;top:18%;animation-delay:0.3s"></span>
-        <span class="banner-star" style="left:85%;top:10%;animation-delay:1.5s"></span>
-        <span class="banner-star" style="left:15%;top:35%;animation-delay:1.8s"></span>
-        <span class="banner-star" style="left:60%;top:30%;animation-delay:0.7s"></span>
-        <span class="banner-star" style="left:90%;top:25%;animation-delay:2.3s"></span>
-        <span class="banner-star" style="left:35%;top:40%;animation-delay:1.1s;width:3px;height:3px"></span>
-        <span class="banner-star" style="left:78%;top:38%;animation-delay:0.4s;width:3px;height:3px"></span>
+        <span class="banner-star" style="left:8%;top:12%;animation-delay:0.5s"></span>
+        <span class="banner-star" style="left:22%;top:6%;animation-delay:1.2s"></span>
+        <span class="banner-star" style="left:38%;top:18%;animation-delay:0.8s"></span>
+        <span class="banner-star" style="left:52%;top:4%;animation-delay:2s"></span>
+        <span class="banner-star" style="left:68%;top:15%;animation-delay:0.3s"></span>
+        <span class="banner-star" style="left:82%;top:8%;animation-delay:1.5s"></span>
+        <span class="banner-star" style="left:45%;top:28%;animation-delay:0.7s"></span>
+        <span class="banner-star" style="left:75%;top:25%;animation-delay:1.8s"></span>
       </div>
-      <div class="banner-ship">
-        <div class="ship-sail-small"></div>
-        <div class="ship-sail"></div>
-        <div class="ship-mast"></div>
-        <div class="ship-hull"></div>
+      <img src="/static/ship.jpg" alt="帆船" class="banner-ship-img">
+      <div class="banner-overlay">
+        <div class="banner-title">Sprint · 航海志</div>
+        <div class="banner-subtitle">驶向远方的灯塔</div>
       </div>
       <div class="banner-waves">
         <div class="wave-line"></div>
@@ -39,7 +36,7 @@
       </div>
     </div>
 
-    <!-- 本周航线红旗 -->
+    <!-- ====== 本周航线红旗 ====== -->
     <div class="weekly-flag animate-in animate-delay-1">
       <h3>📍 本周航线</h3>
       <div style="display:flex;justify-content:space-between;align-items:baseline;">
@@ -54,43 +51,170 @@
       <div style="text-align:right;font-size:0.7rem;color:var(--text-dim);margin-top:4px;">目标 {{ weekly_target }}h / 周</div>
     </div>
 
-    <!-- 航海观察（AI） -->
-    <div class="card insights-card animate-in animate-delay-2">
-      <div class="card-title">🔭 航海观察</div>
+    <!-- ====== 里程碑地图 ====== -->
+    <div class="milestone-map-v2 animate-in animate-delay-2">
+      <div class="map-title">🗺️ 里程碑地图</div>
+      <div class="map-viewport">
+        <!-- 古地图背景 -->
+        <img src="/static/route-map.jpg" alt="古地图" class="map-bg">
+        <div class="map-overlay"></div>
+
+        <!-- SVG 连线层 -->
+        <svg class="route-svg" viewBox="0 0 400 520" preserveAspectRatio="xMidYMid meet">
+          <!-- 主线：1→2→3→4→5→6→7 -->
+          <path class="route-line main-line" d="M 50 60 Q 80 55 110 65 Q 140 80 170 75 Q 200 68 230 80 Q 255 90 270 120 Q 280 150 285 170 Q 300 150 320 130"/>
+          <!-- 北线：7→8→10 -->
+          <path class="route-line branch-line" d="M 320 130 Q 340 145 355 190 Q 350 230 310 260 Q 310 330 310 440"/>
+          <!-- 南线：7→9→10 -->
+          <path class="route-line branch-line" d="M 320 130 Q 310 200 280 350 Q 290 400 310 440"/>
+
+          {# Build a milestone lookup by order_num #}
+          {% set ms = {} %}
+          {% for m in milestones %}
+            {% set _ = ms.update({m.order_num: m}) %}
+          {% endfor %}
+
+          <!-- 1. 启航港口 -->
+          <g class="waypoint {% if ms.get(1) and ms[1].reached %}reached{% elif ms.get(1) and ms[1].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="50" cy="60" r="12" class="wp-circle"/>
+            <text x="50" y="64" class="wp-icon">⚓</text>
+            <text x="50" y="85" class="wp-label">启航港口</text>
+          </g>
+          <!-- 2. 托福90+ -->
+          <g class="waypoint {% if ms.get(2) and ms[2].reached %}reached{% elif ms.get(2) and ms[2].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="110" cy="65" r="12" class="wp-circle"/>
+            <text x="110" y="69" class="wp-icon">📝</text>
+            <text x="110" y="90" class="wp-label">托福90+</text>
+          </g>
+          <!-- 3. 物理1·五分礁 -->
+          <g class="waypoint {% if ms.get(3) and ms[3].reached %}reached{% elif ms.get(3) and ms[3].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="170" cy="75" r="12" class="wp-circle"/>
+            <text x="170" y="79" class="wp-icon">⚡</text>
+            <text x="170" y="100" class="wp-label">物理1·五分礁</text>
+          </g>
+          <!-- 4. 统计学·五分滩 -->
+          <g class="waypoint {% if ms.get(4) and ms[4].reached %}reached{% elif ms.get(4) and ms[4].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="230" cy="80" r="12" class="wp-circle"/>
+            <text x="230" y="84" class="wp-icon">📊</text>
+            <text x="230" y="105" class="wp-label">统计·五分滩</text>
+          </g>
+          <!-- 5. 微积分BC·五分湾 -->
+          <g class="waypoint {% if ms.get(5) and ms[5].reached %}reached{% elif ms.get(5) and ms[5].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="270" cy="120" r="12" class="wp-circle"/>
+            <text x="270" y="124" class="wp-icon">📐</text>
+            <text x="270" y="145" class="wp-label">微积BC·五分湾</text>
+          </g>
+          <!-- 6. 物理C·五分岬 -->
+          <g class="waypoint {% if ms.get(6) and ms[6].reached %}reached{% elif ms.get(6) and ms[6].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="285" cy="170" r="12" class="wp-circle"/>
+            <text x="285" y="174" class="wp-icon">🔬</text>
+            <text x="330" y="175" class="wp-label wp-label-right">物理C·五分岬</text>
+          </g>
+          <!-- 7. 核心灯塔 ⭐ -->
+          <g class="waypoint lighthouse {% if ms.get(7) and ms[7].reached %}reached{% elif ms.get(7) and ms[7].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="320" cy="130" r="16" class="wp-circle lighthouse-circle"/>
+            <text x="320" y="135" class="wp-icon lighthouse-icon">⭐</text>
+            <text x="320" y="108" class="wp-label wp-label-up">核心灯塔</text>
+          </g>
+          <!-- 8. 密歇根安娜堡 (北线) -->
+          <g class="waypoint {% if ms.get(8) and ms[8].reached %}reached{% elif ms.get(8) and ms[8].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="355" cy="190" r="12" class="wp-circle"/>
+            <text x="355" y="194" class="wp-icon">🏛</text>
+            <text x="355" y="215" class="wp-label">安娜堡</text>
+            <text x="355" y="228" class="wp-sublabel">北线·美本</text>
+          </g>
+          <!-- 9. UCL (南线) -->
+          <g class="waypoint {% if ms.get(9) and ms[9].reached %}reached{% elif ms.get(9) and ms[9].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="280" cy="350" r="12" class="wp-circle"/>
+            <text x="280" y="354" class="wp-icon">🎓</text>
+            <text x="230" y="355" class="wp-label wp-label-left">UCL</text>
+            <text x="230" y="368" class="wp-sublabel">南线·英本</text>
+          </g>
+          <!-- 10. 提交申请港 (终点) -->
+          <g class="waypoint {% if ms.get(10) and ms[10].reached %}reached{% elif ms.get(10) and ms[10].is_current %}current{% else %}dim{% endif %}">
+            <circle cx="310" cy="440" r="14" class="wp-circle"/>
+            <text x="310" y="444" class="wp-icon">🏰</text>
+            <text x="310" y="468" class="wp-label">提交申请港</text>
+          </g>
+
+          <!-- 分岔标记 -->
+          <text x="345" y="155" class="route-tag north-tag">北线</text>
+          <text x="260" y="260" class="route-tag south-tag">南线</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ====== 航海观察（AI） ====== -->
+    <div class="card insights-card animate-in animate-delay-3">
+      <div class="card-title">🔭 船长夜观星象</div>
       <div id="insights-content">
         <div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div></div>
       </div>
     </div>
 
-    <!-- 里程碑地图 -->
-    <div class="milestone-map animate-in animate-delay-3">
-      <div class="map-title">🗺️ 里程碑地图</div>
-      <div class="milestone-track">
-        {% for m in milestones %}
-        <div class="milestone-dot {% if m.reached %}reached{% elif m.is_current %}current{% endif %}">
-          <div class="dot">{% if m.reached %}✓{% elif m.order_num == 7 %}⭐{% else %}{{ m.order_num }}{% endif %}</div>
-          <div class="dot-label">{{ m.name[:4] }}</div>
-        </div>
+    <!-- ====== 学科掌握度 ====== -->
+    <div class="card animate-in animate-delay-4">
+      <div class="card-title">📡 学科掌握度</div>
+      <div class="radar-bars">
+        {% set subject_targets = {'物理1': 175, '统计': 175, '微积分BC': 175, '物理C': 150, '托福': 120} %}
+        {% set bar_colors = {'物理1': '#4a90d9', '统计': '#3db8a0', '微积分BC': '#d4a574', '物理C': '#9b59b6', '托福': '#e74c3c'} %}
+        {% for s in stats.by_subject %}
+          {% set target = subject_targets.get(s.subject, 100) %}
+          {% set raw_pct = (s.hours / target) * 100 %}
+          {% set pct = [raw_pct, 100]|min|int %}
+          <div class="radar-item">
+            <div class="radar-label">
+              <span class="radar-name">{{ s.subject }}</span>
+              <span class="radar-pct">{{ pct }}%</span>
+            </div>
+            <div class="radar-track">
+              <div class="radar-fill" style="width:0%;background:{{ bar_colors.get(s.subject, '#7f8c8d') }}" data-target-width="{{ pct }}%"></div>
+            </div>
+          </div>
         {% endfor %}
-      </div>
-      <!-- 航点连线（底部补充说明） -->
-      <div style="margin-top:16px;font-size:0.7rem;color:var(--text-dim);text-align:center;">
-        {% for m in milestones %}
-          {% if m.reached and m.reached_date %}
-            {{ m.name }} ✓ {{ m.reached_date }}
-            {% if not loop.last %} → {% endif %}
+        {% for sub, target in subject_targets.items() %}
+          {% if sub not in stats.by_subject|map(attribute='subject')|list %}
+          <div class="radar-item">
+            <div class="radar-label">
+              <span class="radar-name">{{ sub }}</span>
+              <span class="radar-pct">0%</span>
+            </div>
+            <div class="radar-track">
+              <div class="radar-fill" style="width:0%;background:{{ bar_colors.get(sub, '#7f8c8d') }}" data-target-width="0%"></div>
+            </div>
+          </div>
           {% endif %}
         {% endfor %}
+        {% if not stats.by_subject %}
+        <p class="text-dim text-center" style="font-size:0.85rem;">开始学习后这里会显示各科掌握度</p>
+        {% endif %}
       </div>
     </div>
+
+    <!-- ====== 托福预估 ====== -->
+    <div class="card toefl-card animate-in animate-delay-5">
+      <div class="card-title">🎯 托福预估</div>
+      {% set toefl_hours = 0 %}
+      {% for s in stats.by_subject %}
+        {% if s.subject == '托福' %}{% set toefl_hours = s.hours %}{% endif %}
+      {% endfor %}
+      {% set toefl_estimate = [80 + (toefl_hours * 0.5)|int, 120]|min %}
+      {% set toefl_raw_pct = (toefl_estimate / 110) * 100 %}
+      {% set toefl_pct = [toefl_raw_pct|int, 100]|min %}
+      <div class="toefl-score">{{ toefl_estimate }}</div>
+      <div class="toefl-target">目标：110+ | 已投入 {{ toefl_hours }}h</div>
+      <div class="toefl-progress">
+        <div class="toefl-progress-fill" style="width:{{ toefl_pct }}%"></div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- 底部导航 -->
+  <!-- 底部导航 - 3tab -->
   <nav class="bottom-nav">
     <a href="/" class="nav-item active"><span class="nav-icon">⛵</span><span class="nav-label">航海</span></a>
     <a href="/log" class="nav-item"><span class="nav-icon">📝</span><span class="nav-label">日志</span></a>
     <a href="/route" class="nav-item"><span class="nav-icon">🧭</span><span class="nav-label">航线</span></a>
-    <a href="/star" class="nav-item"><span class="nav-icon">✨</span><span class="nav-label">星象</span></a>
   </nav>
 
   <!-- Toast -->
@@ -112,6 +236,17 @@
         document.getElementById('insights-content').innerHTML =
           '<div class="insight-item">海图解读中，请稍后刷新页面。</div>';
       });
+
+    // 掌握度进度条动画
+    setTimeout(() => {
+      document.querySelectorAll('.radar-fill').forEach(el => {
+        const target = el.getAttribute('data-target-width') || el.style.width;
+        el.style.width = '0%';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => { el.style.width = target; });
+        });
+      });
+    }, 600);
 
     // Service Worker 注册
     if ('serviceWorker' in navigator) {

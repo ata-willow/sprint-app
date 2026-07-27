@@ -121,19 +121,72 @@ body {
   letter-spacing: 1px;
 }
 
-/* --- 航海 Banner --- */
+/* ====== 航海 Banner - 帆船图片 ====== */
 .voyage-banner {
   position: relative;
-  height: 180px;
+  height: 220px;
   margin: -16px -16px 20px -16px;
   overflow: hidden;
   background: linear-gradient(180deg, #0d1f38 0%, #162a48 40%, #1a3355 70%, #0f2240 100%);
   border-radius: 0 0 var(--radius) var(--radius);
 }
 
+.banner-ship-img {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 420px;
+  height: auto;
+  border-radius: 8px;
+  /* 羽化/虚化边缘 - 四周渐变遮罩 */
+  -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 45%, black 50%, transparent 100%);
+  mask-image: radial-gradient(ellipse 70% 80% at 50% 45%, black 50%, transparent 100%);
+  /* 微微暖色调滤镜融入夜空 */
+  filter: sepia(0.15) brightness(0.85) saturate(1.1);
+  /* 浮动动画 */
+  animation: shipFloat 6s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes shipFloat {
+  0%, 100% { transform: translateX(-50%) translateY(0px); }
+  30% { transform: translateX(-50%) translateY(-4px) rotate(0.5deg); }
+  70% { transform: translateX(-50%) translateY(3px) rotate(-0.3deg); }
+}
+
+/* Banner 上的标题叠加层 */
+.banner-overlay {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.banner-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  color: var(--gold-bright);
+  letter-spacing: 4px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 165, 116, 0.15);
+  margin-bottom: 4px;
+}
+
+.banner-subtitle {
+  font-size: 0.75rem;
+  color: rgba(232, 197, 71, 0.6);
+  letter-spacing: 3px;
+  font-style: italic;
+}
+
 .banner-stars {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1;
 }
 
 .banner-star {
@@ -149,52 +202,6 @@ body {
   50% { opacity: 1; }
 }
 
-/* 帆船剪影 - CSS绘制 */
-.banner-ship {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.ship-hull {
-  width: 60px;
-  height: 14px;
-  background: #1a1a2e;
-  border-radius: 0 0 50% 50%;
-  position: relative;
-}
-
-.ship-mast {
-  position: absolute;
-  bottom: 14px;
-  left: 25px;
-  width: 2px;
-  height: 50px;
-  background: #2a2a3e;
-}
-
-.ship-sail {
-  position: absolute;
-  bottom: 24px;
-  left: 27px;
-  width: 0; height: 0;
-  border-left: 0px solid transparent;
-  border-right: 22px solid transparent;
-  border-bottom: 38px solid rgba(212, 165, 116, 0.3);
-  transform: skewX(-5deg);
-}
-
-.ship-sail-small {
-  position: absolute;
-  bottom: 30px;
-  left: 27px;
-  width: 0; height: 0;
-  border-right: 14px solid transparent;
-  border-bottom: 24px solid rgba(232, 197, 71, 0.2);
-  transform: skewX(8deg);
-}
-
 /* 海浪线条 */
 .banner-waves {
   position: absolute;
@@ -202,6 +209,7 @@ body {
   left: 0;
   right: 0;
   height: 50px;
+  z-index: 4;
 }
 
 .wave-line {
@@ -264,70 +272,209 @@ body {
   50% { transform: translateX(8px); }
 }
 
-/* --- 本周航线红旗 --- */
-.weekly-flag {
-  background: linear-gradient(135deg, rgba(212, 165, 116, 0.12) 0%, rgba(232, 197, 71, 0.06) 100%);
-  border: 1px solid rgba(212, 165, 116, 0.25);
+/* ====== 里程碑地图 V2 - 古地图背景 ====== */
+.milestone-map-v2 {
+  background: linear-gradient(135deg, #1a1510 0%, #252015 50%, #1d1812 100%);
+  border: 2px solid rgba(212, 165, 116, 0.3);
   border-radius: var(--radius);
-  padding: 16px 20px;
+  padding: 16px 12px 12px;
   margin-bottom: 16px;
   position: relative;
   overflow: hidden;
 }
 
-.weekly-flag::before {
-  content: '🚩';
+.milestone-map-v2 .map-title {
+  color: var(--gold-bright);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 12px;
+  letter-spacing: 3px;
+  position: relative;
+  z-index: 2;
+}
+
+/* 地图视口 */
+.map-viewport {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 400 / 520;
+}
+
+/* 古地图背景图 */
+.map-bg {
   position: absolute;
-  right: 16px;
-  top: 12px;
-  font-size: 1.5rem;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 虚化+旧化处理 */
+  filter: sepia(0.4) brightness(0.35) saturate(0.7) blur(1px);
   opacity: 0.6;
 }
 
-.weekly-flag h3 {
-  color: var(--gold-bright);
-  font-size: 0.95rem;
-  margin-bottom: 8px;
-  font-family: var(--font-serif);
+/* 暗色叠加层让航点更易读 */
+.map-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(10, 22, 40, 0.3) 0%, rgba(10, 22, 40, 0.7) 100%);
+  z-index: 1;
 }
 
-.weekly-flag .progress-bar {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-top: 8px;
-}
-
-.weekly-flag .progress-fill {
+/* SVG 航线层 */
+.route-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
-  border-radius: 3px;
-  transition: width 0.6s ease;
+  z-index: 2;
 }
 
-/* --- 航海观察（AI Insights）--- */
-.insights-card {
-  background: linear-gradient(135deg, rgba(74, 144, 217, 0.08) 0%, rgba(61, 184, 160, 0.05) 100%);
-  border: 1px solid rgba(74, 144, 217, 0.15);
+/* 连线样式 */
+.route-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
-.insight-item {
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: var(--text);
+.main-line {
+  stroke: var(--gold-dim);
+  stroke-dasharray: 6 4;
+  opacity: 0.7;
 }
 
-.insight-item:last-child { border-bottom: none; }
-
-.insight-item::before {
-  content: '⚓ ';
-  color: var(--accent-teal);
+.branch-line {
+  stroke: var(--accent-teal);
+  stroke-dasharray: 4 4;
+  opacity: 0.5;
 }
 
-/* --- 里程碑地图 --- */
+/* 航点组 */
+.waypoint {
+  transition: opacity 0.3s;
+}
+
+.waypoint.dim {
+  opacity: 0.45;
+}
+
+.waypoint.reached {
+  opacity: 1;
+}
+
+.waypoint.current {
+  opacity: 1;
+}
+
+/* 航点圆圈 */
+.wp-circle {
+  fill: rgba(212, 165, 116, 0.15);
+  stroke: var(--gold-dim);
+  stroke-width: 2;
+  transition: all 0.3s;
+}
+
+.waypoint.reached .wp-circle {
+  fill: rgba(212, 165, 116, 0.4);
+  stroke: var(--gold-bright);
+  filter: drop-shadow(0 0 6px rgba(232, 197, 71, 0.4));
+}
+
+.waypoint.current .wp-circle {
+  stroke: var(--gold-bright);
+  animation: mapPulse 2s ease-in-out infinite;
+}
+
+.waypoint.dim .wp-circle {
+  fill: rgba(212, 165, 116, 0.08);
+  stroke: rgba(184, 134, 74, 0.4);
+}
+
+/* 灯塔特殊样式 */
+.lighthouse-circle {
+  fill: rgba(232, 197, 71, 0.1);
+  stroke: var(--gold-bright);
+  stroke-width: 2;
+}
+
+.lighthouse-icon {
+  font-size: 10px;
+}
+
+.waypoint.reached .lighthouse-circle,
+.waypoint.current .lighthouse-circle {
+  fill: rgba(232, 197, 71, 0.35);
+  filter: drop-shadow(0 0 10px rgba(232, 197, 71, 0.6));
+}
+
+@keyframes mapPulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(232, 197, 71, 0)); }
+  50% { filter: drop-shadow(0 0 8px rgba(232, 197, 71, 0.6)); }
+}
+
+/* 航点图标 */
+.wp-icon {
+  font-size: 9px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+/* 航点标签 */
+.wp-label {
+  font-size: 7px;
+  fill: var(--text);
+  text-anchor: middle;
+  font-family: var(--font-sans);
+  letter-spacing: 0.5px;
+}
+
+.wp-label-right {
+  text-anchor: start;
+  font-size: 6.5px;
+}
+
+.wp-label-left {
+  text-anchor: end;
+  font-size: 6.5px;
+}
+
+.wp-label-up {
+  text-anchor: middle;
+  dominant-baseline: auto;
+}
+
+.wp-sublabel {
+  font-size: 5.5px;
+  fill: var(--text-dim);
+  text-anchor: middle;
+  font-family: var(--font-sans);
+  letter-spacing: 0.5px;
+}
+
+.waypoint.dim .wp-label,
+.waypoint.dim .wp-sublabel {
+  fill: rgba(138, 154, 181, 0.6);
+}
+
+.waypoint.reached .wp-label {
+  fill: var(--gold);
+}
+
+/* 路线标签 */
+.route-tag {
+  font-size: 6px;
+  fill: var(--accent-teal);
+  font-family: var(--font-sans);
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+.north-tag { text-anchor: start; }
+.south-tag { text-anchor: end; }
+
+/* ====== 旧版里程碑地图样式（保留给其他页面引用） ====== */
 .milestone-map {
   background: linear-gradient(135deg, #1a1510 0%, #252015 50%, #1d1812 100%);
   border: 2px solid rgba(212, 165, 116, 0.3);
@@ -338,7 +485,6 @@ body {
   overflow: hidden;
 }
 
-/* 羊皮纸纹理模拟 */
 .milestone-map::before {
   content: '';
   position: absolute;
@@ -415,6 +561,146 @@ body {
 
 .milestone-dot.reached .dot-label {
   color: var(--gold);
+}
+
+/* --- 本周航线红旗 --- */
+.weekly-flag {
+  background: linear-gradient(135deg, rgba(212, 165, 116, 0.12) 0%, rgba(232, 197, 71, 0.06) 100%);
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.weekly-flag::before {
+  content: '🚩';
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  font-size: 1.5rem;
+  opacity: 0.6;
+}
+
+.weekly-flag h3 {
+  color: var(--gold-bright);
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  font-family: var(--font-serif);
+}
+
+.weekly-flag .progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.weekly-flag .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+/* --- 航海观察（AI Insights）--- */
+.insights-card {
+  background: linear-gradient(135deg, rgba(74, 144, 217, 0.08) 0%, rgba(61, 184, 160, 0.05) 100%);
+  border: 1px solid rgba(74, 144, 217, 0.15);
+}
+
+.insight-item {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.insight-item:last-child { border-bottom: none; }
+
+.insight-item::before {
+  content: '⚓ ';
+  color: var(--accent-teal);
+}
+
+/* --- 学科掌握度 --- */
+.radar-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.radar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.radar-item .radar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.radar-item .radar-name {
+  color: var(--text);
+}
+
+.radar-item .radar-pct {
+  color: var(--gold);
+  font-family: var(--font-serif);
+}
+
+.radar-item .radar-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.radar-item .radar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease;
+}
+
+/* --- 托福预估 --- */
+.toefl-card {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.08) 0%, rgba(212, 165, 116, 0.06) 100%);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.toefl-score {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+  font-family: var(--font-serif);
+  text-align: center;
+  margin: 8px 0;
+}
+
+.toefl-target {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.toefl-progress {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.toefl-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e74c3c, var(--gold), var(--gold-bright));
+  border-radius: 4px;
+  transition: width 0.8s ease;
 }
 
 /* --- 日志页 --- */
@@ -821,84 +1107,6 @@ body {
   flex-shrink: 0;
 }
 
-/* --- 星象页 --- */
-/* 雷达图模拟 - 用进度条组 */
-.radar-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.radar-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.radar-item .radar-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-}
-
-.radar-item .radar-name {
-  color: var(--text);
-}
-
-.radar-item .radar-pct {
-  color: var(--gold);
-  font-family: var(--font-serif);
-}
-
-.radar-item .radar-track {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.radar-item .radar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 1s ease;
-}
-
-/* 托福预估 */
-.toefl-card {
-  background: linear-gradient(135deg, rgba(231, 76, 60, 0.08) 0%, rgba(212, 165, 116, 0.06) 100%);
-  border: 1px solid rgba(231, 76, 60, 0.2);
-}
-
-.toefl-score {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--gold-bright);
-  font-family: var(--font-serif);
-  text-align: center;
-  margin: 8px 0;
-}
-
-.toefl-target {
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--text-dim);
-}
-
-.toefl-progress {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 12px;
-}
-
-.toefl-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #e74c3c, var(--gold), var(--gold-bright));
-  border-radius: 4px;
-  transition: width 0.8s ease;
-}
-
 /* --- 通用动画 --- */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
@@ -913,6 +1121,7 @@ body {
 .animate-delay-2 { animation-delay: 0.2s; opacity: 0; }
 .animate-delay-3 { animation-delay: 0.3s; opacity: 0; }
 .animate-delay-4 { animation-delay: 0.4s; opacity: 0; }
+.animate-delay-5 { animation-delay: 0.5s; opacity: 0; }
 
 /* --- Toast 消息 --- */
 .toast {
