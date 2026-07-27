@@ -60,7 +60,7 @@ def route_page():
 def star_page():
     """星象页"""
     stats = get_stats()
-    return render_template('star.html', stats=stats)
+    return render_template('index.html', milestones=[], stats={})
 
 
 # ========== API 路由 ==========
