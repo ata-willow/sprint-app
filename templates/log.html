@@ -22,8 +22,8 @@
 
       <!-- 模式切换 -->
       <div class="log-mode-switch" id="log-mode-switch">
-        <span class="mode-btn active" data-mode="study" id="mode-study">📚 学习</span>
-        <span class="mode-btn" data-mode="mock" id="mode-mock">🎯 模考</span>
+        <span class="mode-btn active" data-mode="study" id="mode-study"><svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>学习</span>
+        <span class="mode-btn" data-mode="mock" id="mode-mock"><svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>模考</span>
       </div>
 
       <!-- ====== 学习模式表单 ====== -->
@@ -35,12 +35,12 @@
         <div class="form-group">
           <label>科目</label>
           <div class="subject-chips" id="subject-chips">
-            <span class="subject-chip" data-subject="物理1">⚡ 物理1</span>
-            <span class="subject-chip" data-subject="统计">📊 统计</span>
-            <span class="subject-chip" data-subject="微积分BC">📐 微积分BC</span>
-            <span class="subject-chip" data-subject="物理C">🔬 物理C</span>
-            <span class="subject-chip" data-subject="托福">📝 托福</span>
-            <span class="subject-chip" data-subject="其他">🔮 其他</span>
+            <span class="subject-chip" data-subject="物理1"><svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>物理1</span>
+            <span class="subject-chip" data-subject="统计"><svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>统计</span>
+            <span class="subject-chip" data-subject="微积分BC"><svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21L21 3"/><path d="M14 3h7v7"/><path d="M10 21H3v-7"/></svg>微积分BC</span>
+            <span class="subject-chip" data-subject="物理C"><svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18l8-8"/><path d="M7 21l9-9"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/></svg>物理C</span>
+            <span class="subject-chip" data-subject="托福"><svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>托福</span>
+            <span class="subject-chip" data-subject="其他"><svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>其他</span>
           </div>
           <input type="hidden" id="log-subject" required>
         </div>
@@ -70,7 +70,7 @@
           <label>顿悟时刻（可选）</label>
           <textarea id="log-insight" rows="2" placeholder="突然想通的瞬间...⭐"></textarea>
         </div>
-        <button type="submit" class="btn-submit">⚓ 记录航程</button>
+        <button type="submit" class="btn-submit"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/><path d="M5 12H2a10 10 0 0020 0h-3"/></svg>记录航程</button>
       </form>
 
       <!-- ====== 模考模式表单 ====== -->
@@ -102,7 +102,7 @@
             <input type="number" id="mock-max-score" step="1" min="1" placeholder="满分 120" style="flex:1">
           </div>
         </div>
-        <button type="submit" class="btn-submit" style="background:linear-gradient(135deg, #2d9a85 0%, #40916c 100%);">🎯 记录模考</button>
+        <button type="submit" class="btn-submit btn-mock-submit"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>记录模考</button>
       </form>
     </div>
 

@@ -346,38 +346,36 @@ body {
 /* ====== 模式切换 - 学习/模考 ====== */
 .log-mode-switch {
   display: flex;
-  gap: 0;
+  gap: 8px;
   margin-bottom: 16px;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid rgba(200, 168, 78, 0.2);
 }
 
 .mode-btn {
   flex: 1;
-  padding: 10px 16px;
+  padding: 12px 16px;
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--text-dim);
   cursor: pointer;
   transition: all 0.25s;
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(135deg, #1a1f2e 0%, #141820 100%);
+  border: 1.5px solid rgba(232, 197, 71, 0.25);
+  border-radius: 12px;
   user-select: none;
   letter-spacing: 1px;
 }
 
-.mode-btn:first-child {
-  border-right: 1px solid rgba(200, 168, 78, 0.15);
-}
-
 .mode-btn:hover {
   color: var(--text);
-  background: rgba(200, 168, 78, 0.06);
+  border-color: rgba(232, 197, 71, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .mode-btn.active {
   color: var(--gold-bright);
-  background: rgba(200, 168, 78, 0.12);
+  border-color: var(--gold-bright);
+  background: linear-gradient(135deg, #2a2f3e 0%, #1a1f2e 100%);
+  box-shadow: 0 0 12px rgba(232, 197, 71, 0.15);
   font-weight: 600;
 }
 
@@ -405,7 +403,16 @@ body {
 
 /* ====== 科目选择器 ====== */
 .subject-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 6px;
+}
 .subject-chip {
+  display: inline-flex;
+  align-items: center;
   padding: 10px 18px;
   border: 1.5px solid rgba(232, 197, 71, 0.35);
   border-radius: 24px;
@@ -440,18 +447,39 @@ body {
 
 /* 提交按钮 */
 .btn-submit {
-  background: linear-gradient(135deg, rgba(180, 155, 90, 0.85) 0%, rgba(160, 135, 75, 0.75) 100%);
-  color: rgba(255, 240, 200, 0.9);
-  border: 1px solid rgba(212, 165, 116, 0.2);
-  border-radius: var(--radius-sm);
-  padding: 12px 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1a1f2e 0%, #141820 100%);
+  color: var(--gold-bright);
+  border: 1.5px solid rgba(232, 197, 71, 0.35);
+  border-radius: 12px;
+  padding: 14px 24px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
-.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212, 165, 116, 0.3); }
+.btn-submit:hover { 
+  border-color: var(--gold-bright);
+  box-shadow: 0 4px 16px rgba(232, 197, 71, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08); 
+}
+.btn-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.btn-mock-submit {
+  border-color: rgba(45, 154, 133, 0.4);
+  color: #40c9a2;
+}
+.btn-mock-submit:hover {
+  border-color: #40c9a2;
+  box-shadow: 0 4px 16px rgba(45, 154, 133, 0.2);
+}
 
 /* ====== 模考科目按钮 ====== */
 .mock-subject-btns { display: flex; gap: 6px; flex-wrap: wrap; }
