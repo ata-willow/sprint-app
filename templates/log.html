@@ -3,19 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0a1628">
+  <meta name="theme-color" content="#060e1a">
   <link rel="manifest" href="/static/manifest.json">
   <link rel="icon" href="/static/icon.png">
   <title>日志 · Sprint</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="page-container">
-    <h2 style="color:var(--gold);font-family:var(--font-serif);letter-spacing:2px;margin-bottom:16px;" class="animate-in">📝 航海日志</h2>
+  <div class="page-container log-page-notebook">
+    <h2 class="log-page-title animate-in">📝 航海日志</h2>
 
-    <!-- 学习录入表单 -->
-    <div class="card animate-in animate-delay-1">
+    <!-- 学习录入表单 - 带模式切换 -->
+    <div class="log-notebook-card animate-in animate-delay-1">
       <div class="card-title">记录今日航行</div>
+
+      <!-- 模式切换 -->
+      <div class="log-mode-switch" id="log-mode-switch">
+        <span class="mode-btn active" data-mode="study" id="mode-study">📚 学习</span>
+        <span class="mode-btn" data-mode="mock" id="mode-mock">🎯 模考</span>
+      </div>
+
+      <!-- ====== 学习模式表单 ====== -->
       <form id="log-form" class="log-form">
         <div class="form-group">
           <label>日期</label>
@@ -23,19 +31,23 @@
         </div>
         <div class="form-group">
           <label>科目</label>
-          <select id="log-subject" required>
-            <option value="">选择科目...</option>
-            <option value="物理1">物理1</option>
-            <option value="统计">统计</option>
-            <option value="微积分BC">微积分BC</option>
-            <option value="物理C">物理C</option>
-            <option value="托福">托福</option>
-            <option value="其他">其他</option>
-          </select>
+          <div class="subject-chips" id="subject-chips">
+            <span class="subject-chip" data-subject="物理1">⚡ 物理1</span>
+            <span class="subject-chip" data-subject="统计">📊 统计</span>
+            <span class="subject-chip" data-subject="微积分BC">📐 微积分BC</span>
+            <span class="subject-chip" data-subject="物理C">🔬 物理C</span>
+            <span class="subject-chip" data-subject="托福">📝 托福</span>
+            <span class="subject-chip" data-subject="其他">🔮 其他</span>
+          </div>
+          <input type="hidden" id="log-subject" required>
         </div>
         <div class="form-group">
           <label>学习时长（小时）</label>
           <input type="number" id="log-duration" step="0.5" min="0.5" max="12" placeholder="1.5" required>
+        </div>
+        <div class="form-group">
+          <label>单元</label>
+          <input type="text" id="log-unit" placeholder="如 第3单元">
         </div>
         <div class="form-group">
           <label>学习内容</label>
@@ -57,32 +69,72 @@
         </div>
         <button type="submit" class="btn-submit">⚓ 记录航程</button>
       </form>
+
+      <!-- ====== 模考模式表单 ====== -->
+      <form id="mock-form" class="log-form" style="display:none">
+        <div class="form-group">
+          <label>日期</label>
+          <input type="date" id="mock-date" required>
+        </div>
+        <div class="form-group">
+          <label>科目</label>
+          <div class="mock-subject-btns" id="mock-subject-btns">
+            <span class="mock-subject-btn" data-subject="物理1">物理1</span>
+            <span class="mock-subject-btn" data-subject="统计">统计</span>
+            <span class="mock-subject-btn" data-subject="微BC">微BC</span>
+            <span class="mock-subject-btn" data-subject="物C">物C</span>
+            <span class="mock-subject-btn" data-subject="托福">托福</span>
+          </div>
+          <input type="hidden" id="mock-subject" required>
+        </div>
+        <div class="form-group">
+          <label>模考名称</label>
+          <input type="text" id="mock-exam-name" placeholder="如 Barron模考3">
+        </div>
+        <div class="form-group">
+          <label>分数</label>
+          <input type="number" id="mock-score" step="0.5" min="0" max="120" placeholder="95" required>
+        </div>
+        <button type="submit" class="btn-submit" style="background:linear-gradient(135deg, #2d9a85 0%, #40916c 100%);">🎯 记录模考</button>
+      </form>
     </div>
 
-    <!-- 最近记录 -->
-    <div class="animate-in animate-delay-2">
-      <h3 style="color:var(--gold);font-size:0.9rem;letter-spacing:1px;margin-bottom:12px;">📋 最近记录</h3>
-      <div id="recent-logs">
-        {% for log in logs %}
-        <div class="log-item">
-          <div class="log-header">
-            <span class="log-subject">{{ log.subject }}</span>
-            <span class="log-date">{{ log.date }}</span>
+    <!-- 历史记录 - 混合展示 -->
+    <div class="log-notebook-card animate-in animate-delay-2">
+      <div class="card-title">📜 最近记录</div>
+      <div class="recent-records">
+        {% for log in logs[:15] %}
+        <div class="recent-record-item recent-study">
+          <div class="recent-record-header">
+            <span class="recent-record-type">📚</span>
+            <span class="recent-record-subject">{{ log.subject }}</span>
+            <span class="recent-record-hours">{{ log.duration_hours }}h</span>
+            <span class="recent-record-date">{{ log.date }}</span>
           </div>
-          {% if log.content %}
-          <div class="log-content">{{ log.content }}</div>
+          {% if log.unit %}
+          <div class="recent-record-unit">{{ log.unit }}</div>
           {% endif %}
-          <div class="log-meta">
-            <span>{{ log.duration_hours }}h</span>
-            <span>{{ log.mood or '' }}</span>
-            {% if log.insight %}
-            <span style="color:var(--gold-bright)">⭐ 顿悟</span>
-            {% endif %}
+          {% if log.content %}
+          <div class="recent-record-content">{{ log.content[:60] }}{% if log.content|length > 60 %}...{% endif %}</div>
+          {% endif %}
+          {% if log.insight %}
+          <div class="recent-record-insight">💡 {{ log.insight }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        {% for ms in mock_scores[:8] %}
+        <div class="recent-record-item recent-mock">
+          <div class="recent-record-header">
+            <span class="recent-record-type">🎯</span>
+            <span class="recent-record-subject">{{ ms.subject }}</span>
+            {% if ms.exam_name %}<span class="recent-record-exam">{{ ms.exam_name }}</span>{% endif %}
+            <span class="recent-record-score">{{ ms.score }}分</span>
+            <span class="recent-record-date">{{ ms.date }}</span>
           </div>
         </div>
         {% endfor %}
-        {% if not logs %}
-        <p class="text-dim text-center" style="padding:20px;font-size:0.85rem;">还没有航行记录，开始记录吧！</p>
+        {% if not logs and not mock_scores %}
+        <p class="text-dim text-center" style="padding:8px;font-size:0.78rem;">还没有记录</p>
         {% endif %}
       </div>
     </div>
@@ -101,19 +153,96 @@
     {% endif %}
   </div>
 
-  <!-- 底部导航 -->
+  <!-- 底部导航 - 4 tab -->
   <nav class="bottom-nav">
-    <a href="/" class="nav-item"><span class="nav-icon">⛵</span><span class="nav-label">航海</span></a>
-    <a href="/log" class="nav-item active"><span class="nav-icon">📝</span><span class="nav-label">日志</span></a>
-    <a href="/route" class="nav-item"><span class="nav-icon">🧭</span><span class="nav-label">航线</span></a>
+    <a href="/" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 18c2.5-1.5 5-1.5 9-1.5s6.5 0 9 1.5"/>
+        <path d="M12 3v13.5"/>
+        <path d="M5 15c0-4 3-8 7-12 4 4 7 8 7 12"/>
+      </svg>
+      <span class="nav-label">航海</span>
+    </a>
+    <a href="/log" class="nav-item active">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 3c-2 1-4 3-5 6l-3 8 8-3c3-1 5-3 6-5"/>
+        <path d="M9 17l-3 3"/>
+        <path d="M14 8c1-1 2.5-1.5 4-1"/>
+      </svg>
+      <span class="nav-label">日志</span>
+    </a>
+    <a href="/route" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polygon points="12,3 13.5,10.5 12,8 10.5,10.5" fill="currentColor" opacity="0.6"/>
+        <polygon points="12,21 10.5,13.5 12,16 13.5,13.5" fill="currentColor" opacity="0.3"/>
+        <line x1="12" y1="3" x2="12" y2="5"/>
+        <line x1="12" y1="19" x2="12" y2="21"/>
+        <line x1="3" y1="12" x2="5" y2="12"/>
+        <line x1="19" y1="12" x2="21" y2="12"/>
+      </svg>
+      <span class="nav-label">航线</span>
+    </a>
+    <a href="/review" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18"/>
+        <path d="M2 2l7.586 7.586"/>
+        <circle cx="11" cy="11" r="2"/>
+      </svg>
+      <span class="nav-label">复盘</span>
+    </a>
   </nav>
 
   <!-- Toast -->
   <div id="toast" class="toast"></div>
 
   <script>
-    // 设置默认日期为今天
-    document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+    // 设置默认日期
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('log-date').value = today;
+    document.getElementById('mock-date').value = today;
+
+    // ====== 模式切换 ======
+    const modeStudy = document.getElementById('mode-study');
+    const modeMock = document.getElementById('mode-mock');
+    const logForm = document.getElementById('log-form');
+    const mockForm = document.getElementById('mock-form');
+
+    modeStudy.addEventListener('click', () => {
+      modeStudy.classList.add('active');
+      modeMock.classList.remove('active');
+      logForm.style.display = '';
+      mockForm.style.display = 'none';
+    });
+
+    modeMock.addEventListener('click', () => {
+      modeMock.classList.add('active');
+      modeStudy.classList.remove('active');
+      mockForm.style.display = '';
+      logForm.style.display = 'none';
+    });
+
+    // ====== 科目Chip选择器 - 学习 ======
+    const logSubjectChips = document.querySelectorAll('#subject-chips .subject-chip');
+    logSubjectChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        logSubjectChips.forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        document.getElementById('log-subject').value = chip.dataset.subject;
+      });
+    });
+
+    // ====== 科目选择器 - 模考 ======
+    const mockSubjectBtns = document.querySelectorAll('#mock-subject-btns .mock-subject-btn');
+    mockSubjectBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        mockSubjectBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        const nameMap = {'微BC': '微积分BC', '物C': '物理C'};
+        document.getElementById('mock-subject').value = nameMap[btn.dataset.subject] || btn.dataset.subject;
+      });
+    });
 
     // 心情选择器
     let selectedMood = '';
@@ -133,16 +262,20 @@
       setTimeout(() => t.classList.remove('show'), 2500);
     }
 
-    // 提交表单
+    // 提交学习日志
     document.getElementById('log-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const subjectVal = document.getElementById('log-subject').value;
+      if (!subjectVal) { showToast('请选择科目'); return; }
       const data = {
         date: document.getElementById('log-date').value,
-        subject: document.getElementById('log-subject').value,
+        subject: subjectVal,
         duration_hours: document.getElementById('log-duration').value,
         content: document.getElementById('log-content').value,
         mood: selectedMood,
         insight: document.getElementById('log-insight').value || null,
+        unit: document.getElementById('log-unit').value || null,
+        log_type: 'study',
       };
 
       try {
@@ -154,13 +287,47 @@
         const result = await res.json();
         if (result.ok) {
           showToast('⚓ 航程已记录！');
-          // 清空表单
           document.getElementById('log-content').value = '';
           document.getElementById('log-insight').value = '';
           document.getElementById('log-duration').value = '';
+          document.getElementById('log-unit').value = '';
+          document.querySelectorAll('#subject-chips .subject-chip').forEach(c => c.classList.remove('selected'));
+          document.getElementById('log-subject').value = '';
           document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
           selectedMood = '';
-          // 2秒后刷新页面
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          showToast('记录失败：' + (result.error || '未知错误'));
+        }
+      } catch (err) {
+        showToast('网络错误，请重试');
+      }
+    });
+
+    // 提交模考分数
+    document.getElementById('mock-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const subject = document.getElementById('mock-subject').value;
+      const score = document.getElementById('mock-score').value;
+      const date = document.getElementById('mock-date').value;
+      const examName = document.getElementById('mock-exam-name').value;
+
+      if (!subject) { showToast('请选择科目'); return; }
+      if (!score) { showToast('请输入分数'); return; }
+
+      try {
+        const res = await fetch('/api/mock-scores', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject, score: parseFloat(score), date, exam_name: examName || null }),
+        });
+        const result = await res.json();
+        if (result.ok) {
+          showToast('🎯 模考分数已记录！');
+          document.getElementById('mock-score').value = '';
+          document.getElementById('mock-exam-name').value = '';
+          document.querySelectorAll('#mock-subject-btns .mock-subject-btn').forEach(b => b.classList.remove('selected'));
+          document.getElementById('mock-subject').value = '';
           setTimeout(() => location.reload(), 1500);
         } else {
           showToast('记录失败：' + (result.error || '未知错误'));

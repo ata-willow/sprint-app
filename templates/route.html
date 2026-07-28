@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0a1628">
+  <meta name="theme-color" content="#060e1a">
   <link rel="manifest" href="/static/manifest.json">
   <link rel="icon" href="/static/icon.png">
   <title>航线 · Sprint</title>
@@ -33,19 +33,6 @@
       </div>
     </div>
 
-    <!-- 顿悟时刻 -->
-    {% if stats.insights %}
-    <div class="card animate-in animate-delay-2">
-      <div class="card-title">⭐ 顿悟时刻</div>
-      {% for ins in stats.insights %}
-      <div class="insight-gem" style="margin-bottom:8px;">
-        <div class="gem-subject">{{ ins.subject }} · {{ ins.date }}</div>
-        <div class="gem-text">{{ ins.insight }}</div>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
     <!-- 各科学习时长柱状图 -->
     <div class="card animate-in animate-delay-2">
       <div class="card-title">📊 各科学习时长</div>
@@ -74,12 +61,12 @@
 
     <!-- 各科占比 -->
     {% if stats.by_subject %}
-    <div class="card animate-in animate-delay-3">
+    <div class="card animate-in animate-delay-2">
       <div class="card-title">🥧 各科占比</div>
       {% set total = stats.by_subject|map(attribute='hours')|sum %}
       <div class="donut-chart" id="donut-chart"></div>
       <div class="donut-legend">
-        {% set colors = ['#4a90d9', '#3db8a0', '#d4a574', '#9b59b6', '#e74c3c', '#7f8c8d'] %}
+        {% set colors = ['#3a7bc8', '#2d9a85', '#d4a574', '#8b49a6', '#c94444', '#6e7f99'] %}
         {% for s in stats.by_subject %}
         <div class="legend-item">
           <span class="legend-dot" style="background:{{ colors[loop.index0 % colors|length] }}"></span>
@@ -90,37 +77,99 @@
     </div>
     {% endif %}
 
-    <!-- 航点时间线 -->
+    <!-- 航行时间线 - 混合学习日志+模考记录 -->
     <div class="card animate-in animate-delay-3">
-      <div class="card-title">🗺️ 航点时间线</div>
-      <div class="timeline">
-        {% for m in milestones %}
-        <div class="timeline-item {% if m.reached %}reached{% elif m.is_current %}current{% endif %}">
-          <div class="tl-name">{{ m.name }}</div>
-          <div class="tl-desc">{{ m.description }}</div>
-          {% if m.reached and m.reached_date %}
-          <div class="tl-date">✓ {{ m.reached_date }}</div>
+      <div class="card-title">📜 航行时间线</div>
+      {% if timeline %}
+      <div class="voyage-timeline">
+        {% for item in timeline %}
+          {% if item.timeline_type == 'study' %}
+          <div class="voyage-entry voyage-study">
+            <div class="voyage-date">{{ item.date }}</div>
+            <div class="voyage-content">
+              <span class="voyage-subject">{{ item.subject }}</span>
+              {% if item.unit %}<span class="voyage-unit">{{ item.unit }}</span>{% endif %}
+              <span class="voyage-hours">{{ item.duration_hours }}h</span>
+              {% if item.mood %}<span class="voyage-mood">{{ item.mood }}</span>{% endif %}
+            </div>
+            {% if item.content %}
+            <div class="voyage-note">{{ item.content[:80] }}{% if item.content|length > 80 %}...{% endif %}</div>
+            {% endif %}
+            {% if item.insight %}
+            <div class="voyage-insight">💡 {{ item.insight }}</div>
+            {% endif %}
+          </div>
+          {% elif item.timeline_type == 'mock' %}
+          <div class="voyage-entry voyage-mock">
+            <div class="voyage-date">{{ item.date }}</div>
+            <div class="voyage-content">
+              <span class="voyage-mock-tag">🎯 模考</span>
+              <span class="voyage-subject">{{ item.subject }}</span>
+              {% if item.exam_name %}<span class="voyage-exam-name">{{ item.exam_name }}</span>{% endif %}
+            </div>
+            <div class="voyage-score-line">
+              <span class="voyage-score-val">{{ item.score }}</span>
+              <span class="voyage-score-label">分</span>
+            </div>
+          </div>
           {% endif %}
-        </div>
         {% endfor %}
       </div>
+      {% else %}
+      <p class="text-dim text-center" style="font-size:0.85rem;">还没有航行记录</p>
+      {% endif %}
     </div>
+
   </div>
 
-  <!-- 底部导航 -->
+  <!-- 底部导航 - 4 tab -->
   <nav class="bottom-nav">
-    <a href="/" class="nav-item"><span class="nav-icon">⛵</span><span class="nav-label">航海</span></a>
-    <a href="/log" class="nav-item"><span class="nav-icon">📝</span><span class="nav-label">日志</span></a>
-    <a href="/route" class="nav-item active"><span class="nav-icon">🧭</span><span class="nav-label">航线</span></a>
+    <a href="/" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 18c2.5-1.5 5-1.5 9-1.5s6.5 0 9 1.5"/>
+        <path d="M12 3v13.5"/>
+        <path d="M5 15c0-4 3-8 7-12 4 4 7 8 7 12"/>
+      </svg>
+      <span class="nav-label">航海</span>
+    </a>
+    <a href="/log" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 3c-2 1-4 3-5 6l-3 8 8-3c3-1 5-3 6-5"/>
+        <path d="M9 17l-3 3"/>
+        <path d="M14 8c1-1 2.5-1.5 4-1"/>
+      </svg>
+      <span class="nav-label">日志</span>
+    </a>
+    <a href="/route" class="nav-item active">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polygon points="12,3 13.5,10.5 12,8 10.5,10.5" fill="currentColor" opacity="0.6"/>
+        <polygon points="12,21 10.5,13.5 12,16 13.5,13.5" fill="currentColor" opacity="0.3"/>
+        <line x1="12" y1="3" x2="12" y2="5"/>
+        <line x1="12" y1="19" x2="12" y2="21"/>
+        <line x1="3" y1="12" x2="5" y2="12"/>
+        <line x1="19" y1="12" x2="21" y2="12"/>
+      </svg>
+      <span class="nav-label">航线</span>
+    </a>
+    <a href="/review" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18"/>
+        <path d="M2 2l7.586 7.586"/>
+        <circle cx="11" cy="11" r="2"/>
+      </svg>
+      <span class="nav-label">复盘</span>
+    </a>
   </nav>
 
   <script>
-    // 环形图 - CSS conic-gradient
+    // 环形图
     {% if stats.by_subject %}
     (function() {
       const data = {{ stats.by_subject | tojson }};
       const total = data.reduce((s, d) => s + d.hours, 0);
-      const colors = ['#4a90d9', '#3db8a0', '#d4a574', '#9b59b6', '#e74c3c', '#7f8c8d'];
+      const colors = ['#3a7bc8', '#2d9a85', '#d4a574', '#8b49a6', '#c94444', '#6e7f99'];
       let gradParts = [];
       let cumPct = 0;
       data.forEach((d, i) => {

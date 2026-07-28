@@ -1,14 +1,17 @@
 """Sprint - 航海主题学习打卡 PWA"""
 import os
 import json
+from datetime import datetime
 import requests as req_lib
 from flask import Flask, render_template, request, jsonify
-from models import init_db, add_log, get_logs, get_stats, get_milestones, update_milestone
+from models import (init_db, add_log, get_logs, get_stats, get_milestones,
+                    update_milestone, add_mock_score, get_mock_scores,
+                    get_subject_predictions, get_yearly_heatmap, get_timeline)
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
-DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
+DEEPSEEK_API_KEY = 'sk21b4ec37b4644a74a9a8d3bbd3c4a853'
 DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions'
 
 # 启动时初始化数据库
@@ -32,12 +35,24 @@ def _mark_current_milestone(milestones):
     return milestones
 
 
+def _get_latest_reached_order(milestones):
+    """获取最新到达的里程碑的order_num"""
+    latest = 0
+    for m in milestones:
+        if m['reached']:
+            latest = m['order_num']
+    return latest
+
+
 @app.route('/')
 def index():
     """航海页（首页）"""
     milestones = _mark_current_milestone(get_milestones())
     stats = get_stats()
-    return render_template('index.html', milestones=milestones, stats=stats)
+    predictions = get_subject_predictions()
+    latest_reached = _get_latest_reached_order(milestones)
+    return render_template('index.html', milestones=milestones, stats=stats,
+                           predictions=predictions, latest_reached=latest_reached)
 
 
 @app.route('/log')
@@ -45,7 +60,8 @@ def log_page():
     """日志页"""
     logs = get_logs(limit=30)
     stats = get_stats()
-    return render_template('log.html', logs=logs, insights=stats.get('insights', []))
+    mock_scores = get_mock_scores(limit=20)
+    return render_template('log.html', logs=logs, insights=stats.get('insights', []), mock_scores=mock_scores)
 
 
 @app.route('/route')
@@ -53,14 +69,15 @@ def route_page():
     """航线页"""
     milestones = _mark_current_milestone(get_milestones())
     stats = get_stats()
-    return render_template('route.html', milestones=milestones, stats=stats)
+    timeline = get_timeline(limit=30)
+    return render_template('route.html', milestones=milestones, stats=stats, timeline=timeline)
 
 
-@app.route('/star')
-def star_page():
-    """星象页"""
+@app.route('/review')
+def review_page():
+    """复盘页"""
     stats = get_stats()
-    return render_template('index.html', milestones=[], stats={})
+    return render_template('review.html', stats=stats)
 
 
 # ========== API 路由 ==========
@@ -77,6 +94,8 @@ def api_add_log():
             content=data.get('content', ''),
             mood=data.get('mood', ''),
             insight=data.get('insight', None),
+            unit=data.get('unit', None),
+            log_type=data.get('log_type', 'study'),
         )
         return jsonify({'ok': True, 'id': log_id})
     except Exception as e:
@@ -105,7 +124,6 @@ def api_insights():
     stats = get_stats()
     logs = get_logs(limit=20)
 
-    # 构造分析 prompt
     summary_lines = []
     for s in stats.get('by_subject', []):
         summary_lines.append(f"- {s['subject']}: {s['hours']}小时")
@@ -150,7 +168,6 @@ def api_insights():
         )
         result = resp.json()
         text = result['choices'][0]['message']['content']
-        # 按换行或编号分割
         lines = [l.strip().lstrip('0123456789.-、') for l in text.split('\n') if l.strip()]
         lines = [l for l in lines if len(l) > 5][:4]
         return jsonify({'insights': lines if lines else [text[:100]]})
@@ -177,6 +194,154 @@ def api_update_milestone():
         return jsonify({'ok': ok})
     except Exception as e:
         return jsonify({'ok': False, 'error': str(e)}), 400
+
+
+@app.route('/api/mock-scores', methods=['POST'])
+def api_add_mock_score():
+    """添加模考分数"""
+    data = request.get_json(force=True)
+    try:
+        score_id = add_mock_score(
+            subject=data['subject'],
+            score=float(data['score']),
+            date=data.get('date', datetime.now().strftime('%Y-%m-%d')),
+            exam_name=data.get('exam_name', None),
+        )
+        return jsonify({'ok': True, 'id': score_id})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 400
+
+
+@app.route('/api/mock-scores')
+def api_get_mock_scores():
+    """获取模考分数列表"""
+    subject = request.args.get('subject', None)
+    limit = request.args.get('limit', 30, type=int)
+    scores = get_mock_scores(subject=subject, limit=limit)
+    return jsonify(scores)
+
+
+@app.route('/api/predictions')
+def api_get_predictions():
+    """获取学科预测分"""
+    predictions = get_subject_predictions()
+    return jsonify(predictions)
+
+
+@app.route('/api/yearly-heatmap')
+def api_yearly_heatmap():
+    """获取年度热力图数据"""
+    year = request.args.get('year', datetime.now().year, type=int)
+    data = get_yearly_heatmap(year)
+    return jsonify(data)
+
+
+@app.route('/api/timeline')
+def api_get_timeline():
+    """获取混合时间线"""
+    limit = request.args.get('limit', 30, type=int)
+    timeline = get_timeline(limit=limit)
+    return jsonify(timeline)
+
+
+@app.route('/api/monthly-review', methods=['POST'])
+def api_monthly_review():
+    """AI月度复盘"""
+    data = request.get_json(force=True)
+    month = data.get('month', datetime.now().strftime('%Y-%m'))
+
+    logs = get_logs(limit=200)
+    month_logs = [l for l in logs if l['date'].startswith(month)]
+
+    mock_scores = get_mock_scores(limit=100)
+    month_scores = [s for s in mock_scores if s['date'].startswith(month)]
+
+    study_days = len(set(l['date'] for l in month_logs))
+    total_hours = sum(l['duration_hours'] for l in month_logs)
+
+    if not month_logs and not month_scores:
+        return jsonify({'review': '这个月还没有学习记录，开始你的航程吧！⚓'})
+
+    log_lines = []
+    for l in month_logs[:30]:
+        unit_part = f" [{l.get('unit', '')}]" if l.get('unit') else ''
+        log_lines.append(f"  {l['date']}{unit_part} {l['subject']} {l['duration_hours']}h 心情{l.get('mood', '?')}")
+
+    score_lines = []
+    for s in month_scores:
+        exam_part = f" ({s.get('exam_name', '')})" if s.get('exam_name') else ''
+        score_lines.append(f"  {s['date']}{exam_part} {s['subject']} {s['score']}分")
+
+    prompt = f"""你是陪伴学习者的顾问，阅读学习日志、模考记录，写下简短评语。
+
+请为Willow（17岁，在家自学准备出国留学的高中生）生成{month}月的学习复盘。
+
+本月数据：
+- 学习天数：{study_days}天
+- 总学习时长：{round(total_hours, 1)}小时
+- 平均每日：{round(total_hours / max(study_days, 1), 1)}小时
+
+学习记录：
+{chr(10).join(log_lines)}
+
+模考分数：
+{chr(10).join(score_lines) if score_lines else '  本月暂无模考'}
+
+请严格按以下JSON格式返回（不要加markdown代码块标记，直接返回纯JSON）：
+{{
+  "mood": "一个最能代表本月学习状态的emoji",
+  "title": "一句话概括这个月（10字以内）",
+  "summary": "整体回顾，2-3句话",
+  "highlights": ["亮点1（一句话）", "亮点2"],
+  "improvements": ["建议1（一句话）", "建议2"],
+  "next_month": "下个月的一句话方向"
+}}
+
+要求：
+1. 语言平实克制，去掉所有比喻和宏大叙事，纯粹围绕学习本身
+2. 带有温和的温度，不冰冷生硬，拒绝空洞鸡汤
+3. 立足当下成绩与记录内容，客观点评，只做总结和提点
+4. 不要强行安排学习计划
+5. highlights和improvements各2-3条，每条一句话"""
+
+    if not DEEPSEEK_API_KEY:
+        import json as _json
+        fallback = {
+            "mood": "🌱",
+            "title": "蓄势待发",
+            "summary": f"本月学习了{study_days}天，累计{round(total_hours, 1)}小时。好的开始是成功的一半。",
+            "highlights": ["保持了每日学习的习惯", "开始了新的学习旅程"],
+            "improvements": ["可以尝试增加单科深度", "模考数据会帮助更精准地定位薄弱点"],
+            "next_month": "继续积累，建立稳定的学习节奏"
+        }
+        return jsonify({'review': _json.dumps(fallback, ensure_ascii=False)})
+
+    try:
+        resp = req_lib.post(
+            DEEPSEEK_URL,
+            headers={'Authorization': f'Bearer {DEEPSEEK_API_KEY}'},
+            json={
+                'model': 'deepseek-chat',
+                'messages': [{'role': 'user', 'content': prompt}],
+                'max_tokens': 600,
+                'temperature': 0.7,
+            },
+            timeout=20,
+        )
+        result = resp.json()
+        text = result['choices'][0]['message']['content']
+        return jsonify({'review': text})
+    except Exception as e:
+        import json as _json
+        fallback = {
+            "mood": "⏳",
+            "title": "稍后再试",
+            "summary": "复盘生成遇到了一点问题，请稍后重试。",
+            "highlights": [],
+            "improvements": [],
+            "next_month": ""
+        }
+        return jsonify({'review': _json.dumps(fallback, ensure_ascii=False)})
 
 
 if __name__ == '__main__':

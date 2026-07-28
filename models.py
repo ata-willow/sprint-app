@@ -39,6 +39,8 @@ def init_db():
         content TEXT,
         mood TEXT,
         insight TEXT,
+        unit TEXT,
+        log_type TEXT NOT NULL DEFAULT 'study',
         created_at TEXT NOT NULL
     )''')
 
@@ -51,6 +53,27 @@ def init_db():
         reached_date TEXT,
         UNIQUE(order_num)
     )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS mock_scores (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        subject TEXT NOT NULL,
+        score REAL NOT NULL,
+        date TEXT NOT NULL,
+        exam_name TEXT,
+        created_at TEXT NOT NULL
+    )''')
+
+    # 迁移：为旧表添加新字段
+    for col, col_type in [('unit', 'TEXT'), ('log_type', "TEXT NOT NULL DEFAULT 'study'")]:
+        try:
+            c.execute(f'ALTER TABLE logs ADD COLUMN {col} {col_type}')
+        except Exception:
+            pass
+
+    try:
+        c.execute('ALTER TABLE mock_scores ADD COLUMN exam_name TEXT')
+    except Exception:
+        pass
 
     # 初始化航点数据（仅当表为空时）
     c.execute('SELECT COUNT(*) FROM milestones')
@@ -67,14 +90,14 @@ def init_db():
 
 # ========== logs 操作 ==========
 
-def add_log(date, subject, duration_hours, content, mood, insight=None):
+def add_log(date, subject, duration_hours, content, mood, insight=None, unit=None, log_type='study'):
     """添加一条学习记录"""
     conn = get_db()
     c = conn.cursor()
     created_at = datetime.now().isoformat()
     c.execute(
-        'INSERT INTO logs (date, subject, duration_hours, content, mood, insight, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        (date, subject, duration_hours, content, mood, insight, created_at)
+        'INSERT INTO logs (date, subject, duration_hours, content, mood, insight, unit, log_type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        (date, subject, duration_hours, content, mood, insight, unit, log_type, created_at)
     )
     log_id = c.lastrowid
     conn.commit()
@@ -97,16 +120,16 @@ def get_stats():
     conn = get_db()
     c = conn.cursor()
 
-    # 总学习时长
-    c.execute('SELECT COALESCE(SUM(duration_hours), 0) FROM logs')
+    # 总学习时长（仅study类型）
+    c.execute("SELECT COALESCE(SUM(duration_hours), 0) FROM logs WHERE log_type = 'study'")
     total_hours = c.fetchone()[0]
 
     # 各科学习时长
-    c.execute('SELECT subject, SUM(duration_hours) as hours FROM logs GROUP BY subject ORDER BY hours DESC')
+    c.execute("SELECT subject, SUM(duration_hours) as hours FROM logs WHERE log_type = 'study' GROUP BY subject ORDER BY hours DESC")
     by_subject = [{'subject': r['subject'], 'hours': r['hours']} for r in c.fetchall()]
 
     # 连续打卡天数
-    c.execute('SELECT DISTINCT date FROM logs ORDER BY date DESC')
+    c.execute("SELECT DISTINCT date FROM logs WHERE log_type = 'study' ORDER BY date DESC")
     dates = [r['date'] for r in c.fetchall()]
     streak = 0
     if dates:
@@ -124,12 +147,20 @@ def get_stats():
     insights = [dict(r) for r in c.fetchall()]
 
     # 各科记录数
-    c.execute('SELECT subject, COUNT(*) as count FROM logs GROUP BY subject ORDER BY count DESC')
+    c.execute("SELECT subject, COUNT(*) as count FROM logs WHERE log_type = 'study' GROUP BY subject ORDER BY count DESC")
     by_count = [{'subject': r['subject'], 'count': r['count']} for r in c.fetchall()]
 
     # 总记录数
-    c.execute('SELECT COUNT(*) FROM logs')
+    c.execute("SELECT COUNT(*) FROM logs WHERE log_type = 'study'")
     total_logs = c.fetchone()[0]
+
+    # 各科最新模考分数
+    c.execute('''SELECT ms.subject, ms.score, ms.date, ms.exam_name FROM mock_scores ms
+                 INNER JOIN (
+                   SELECT subject, MAX(date) as max_date FROM mock_scores GROUP BY subject
+                 ) latest ON ms.subject = latest.subject AND ms.date = latest.max_date
+                 ORDER BY ms.subject''')
+    latest_mock_scores = [{'subject': r['subject'], 'score': r['score'], 'date': r['date'], 'exam_name': (dict(r)['exam_name'] if 'exam_name' in dict(r) else '')} for r in c.fetchall()]
 
     conn.close()
     return {
@@ -139,6 +170,7 @@ def get_stats():
         'insights': insights,
         'by_count': by_count,
         'total_logs': total_logs,
+        'latest_mock_scores': latest_mock_scores,
     }
 
 
@@ -168,3 +200,141 @@ def update_milestone(order_num, reached, reached_date=None):
     updated = c.rowcount > 0
     conn.close()
     return updated
+
+
+# ========== mock_scores 操作 ==========
+
+def add_mock_score(subject, score, date, exam_name=None):
+    """添加一条模考分数记录"""
+    conn = get_db()
+    c = conn.cursor()
+    created_at = datetime.now().isoformat()
+    c.execute(
+        'INSERT INTO mock_scores (subject, score, date, exam_name, created_at) VALUES (?, ?, ?, ?, ?)',
+        (subject, score, date, exam_name, created_at)
+    )
+    score_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    return score_id
+
+
+def get_mock_scores(subject=None, limit=30):
+    """获取模考分数列表，可按科目筛选"""
+    conn = get_db()
+    c = conn.cursor()
+    if subject:
+        c.execute('SELECT * FROM mock_scores WHERE subject = ? ORDER BY date DESC, created_at DESC LIMIT ?',
+                  (subject, limit))
+    else:
+        c.execute('SELECT * FROM mock_scores ORDER BY date DESC, created_at DESC LIMIT ?', (limit,))
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return rows
+
+
+# ========== 混合时间线 ==========
+
+def get_timeline(limit=30):
+    """获取混合时间线：学习日志 + 模考记录，按日期倒序排列"""
+    conn = get_db()
+    c = conn.cursor()
+
+    # 获取学习记录
+    c.execute("SELECT id, date, subject, duration_hours, content, mood, insight, unit, log_type, created_at FROM logs ORDER BY date DESC, created_at DESC LIMIT ?", (limit,))
+    study_rows = [dict(r) for r in c.fetchall()]
+
+    # 获取模考记录
+    c.execute('SELECT id, date, subject, score, exam_name, created_at FROM mock_scores ORDER BY date DESC, created_at DESC LIMIT ?', (limit,))
+    mock_rows = [dict(r) for r in c.fetchall()]
+
+    conn.close()
+
+    # 标记类型
+    for r in study_rows:
+        r['timeline_type'] = 'study'
+    for r in mock_rows:
+        r['timeline_type'] = 'mock'
+
+    # 合并并按日期倒序排列
+    all_items = study_rows + mock_rows
+    all_items.sort(key=lambda x: (x['date'], x.get('created_at', '')), reverse=True)
+
+    return all_items[:limit]
+
+
+# ========== 学科预测分 ==========
+
+def get_subject_predictions():
+    """根据模考分数趋势，简单线性回归预测最终分数"""
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute('SELECT subject, score, date FROM mock_scores ORDER BY date ASC')
+    rows = c.fetchall()
+    conn.close()
+
+    if not rows:
+        return {}
+
+    subject_scores = {}
+    for r in rows:
+        sub = r['subject']
+        if sub not in subject_scores:
+            subject_scores[sub] = []
+        subject_scores[sub].append((r['date'], r['score']))
+
+    predictions = {}
+    for sub, scores in subject_scores.items():
+        n = len(scores)
+        if n < 2:
+            predictions[sub] = round(scores[0][1], 1)
+            continue
+
+        xs = list(range(n))
+        ys = [s[1] for s in scores]
+        x_mean = sum(xs) / n
+        y_mean = sum(ys) / n
+        numerator = sum((xs[i] - x_mean) * (ys[i] - y_mean) for i in range(n))
+        denominator = sum((xs[i] - x_mean) ** 2 for i in range(n))
+
+        if denominator == 0:
+            predictions[sub] = round(y_mean, 1)
+            continue
+
+        b = numerator / denominator
+        a = y_mean - b * x_mean
+        predicted = a + b * n
+
+        if sub == '托福':
+            predicted = max(0, min(120, predicted))
+        else:
+            predicted = max(0, min(5, predicted))
+
+        predictions[sub] = round(predicted, 1)
+
+    return predictions
+
+
+# ========== 年度热力图数据 ==========
+
+def get_yearly_heatmap(year=None):
+    """获取指定年份每天的学习记录标记数据"""
+    if year is None:
+        year = datetime.now().year
+
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute(
+        "SELECT date, SUM(duration_hours) as hours FROM logs WHERE date LIKE ? AND log_type = 'study' GROUP BY date ORDER BY date",
+        (f'{year}-%',)
+    )
+    rows = c.fetchall()
+    conn.close()
+
+    heatmap = {}
+    for r in rows:
+        heatmap[r['date']] = round(r['hours'], 1)
+
+    return {'year': year, 'heatmap': heatmap}

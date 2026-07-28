@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#060e1a">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="/static/icon.png">
+  <title>复盘 · Sprint</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="page-container">
+    <h2 class="animate-in" style="color:var(--gold);font-family:var(--font-serif);letter-spacing:2px;margin-bottom:16px;">🪶 复盘</h2>
+
+    <!-- 全年日历热力图 -->
+    <div class="card animate-in animate-delay-1">
+      <div class="card-title">📅 年度热力图</div>
+      <div class="heatmap-year-selector">
+        <button class="heatmap-year-btn" id="heatmap-prev-year" onclick="changeHeatmapYear(-1)">◀</button>
+        <span id="heatmap-year-label" class="heatmap-year-label"></span>
+        <button class="heatmap-year-btn" id="heatmap-next-year" onclick="changeHeatmapYear(1)">▶</button>
+      </div>
+      <!-- 月份标签 -->
+      <div class="heatmap-months" id="heatmap-months"></div>
+      <!-- 热力图网格 -->
+      <div class="heatmap-grid" id="heatmap-grid">
+        <div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div></div>
+      </div>
+      <!-- 图例 -->
+      <div class="heatmap-legend">
+        <span class="heatmap-legend-label">少</span>
+        <span class="heatmap-legend-cell" style="background:var(--heatmap-0)"></span>
+        <span class="heatmap-legend-cell" style="background:var(--heatmap-1)"></span>
+        <span class="heatmap-legend-cell" style="background:var(--heatmap-2)"></span>
+        <span class="heatmap-legend-cell" style="background:var(--heatmap-3)"></span>
+        <span class="heatmap-legend-cell" style="background:var(--heatmap-4)"></span>
+        <span class="heatmap-legend-label">多</span>
+      </div>
+      <div class="heatmap-stats" id="heatmap-stats"></div>
+    </div>
+
+    <!-- 月度AI复盘 -->
+    <div class="card animate-in animate-delay-2">
+      <div class="card-title">🧠 月度AI复盘</div>
+      <div class="monthly-review-section">
+        <div class="monthly-review-controls">
+          <select id="review-month" class="review-month-select">
+          </select>
+          <button class="btn-review-generate" id="btn-generate-review" onclick="generateMonthlyReview()">
+            ✨ 生成本月复盘
+          </button>
+        </div>
+        <div class="review-result" id="review-result">
+          <p class="text-dim" style="font-size:0.85rem;">选择月份并点击生成，船长会为你分析当月航程</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部导航 - 4 tab -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 18c2.5-1.5 5-1.5 9-1.5s6.5 0 9 1.5"/>
+        <path d="M12 3v13.5"/>
+        <path d="M5 15c0-4 3-8 7-12 4 4 7 8 7 12"/>
+      </svg>
+      <span class="nav-label">航海</span>
+    </a>
+    <a href="/log" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 3c-2 1-4 3-5 6l-3 8 8-3c3-1 5-3 6-5"/>
+        <path d="M9 17l-3 3"/>
+        <path d="M14 8c1-1 2.5-1.5 4-1"/>
+      </svg>
+      <span class="nav-label">日志</span>
+    </a>
+    <a href="/route" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polygon points="12,3 13.5,10.5 12,8 10.5,10.5" fill="currentColor" opacity="0.6"/>
+        <polygon points="12,21 10.5,13.5 12,16 13.5,13.5" fill="currentColor" opacity="0.3"/>
+        <line x1="12" y1="3" x2="12" y2="5"/>
+        <line x1="12" y1="19" x2="12" y2="21"/>
+        <line x1="3" y1="12" x2="5" y2="12"/>
+        <line x1="19" y1="12" x2="21" y2="12"/>
+      </svg>
+      <span class="nav-label">航线</span>
+    </a>
+    <a href="/review" class="nav-item active">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18"/>
+        <path d="M2 2l7.586 7.586"/>
+        <circle cx="11" cy="11" r="2"/>
+      </svg>
+      <span class="nav-label">复盘</span>
+    </a>
+  </nav>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ====== 月份选择器初始化 ======
+    const now = new Date();
+    const monthSelect = document.getElementById('review-month');
+    for (let i = 0; i < 12; i++) {
+      const m = i + 1;
+      const val = `${now.getFullYear()}-${String(m).padStart(2, '0')}`;
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = `${now.getFullYear()}年${m}月`;
+      if (m === now.getMonth() + 1) opt.selected = true;
+      monthSelect.appendChild(opt);
+    }
+
+    // ====== 热力图 ======
+    let currentHeatmapYear = now.getFullYear();
+
+    function changeHeatmapYear(delta) {
+      currentHeatmapYear += delta;
+      loadHeatmap(currentHeatmapYear);
+    }
+
+    async function loadHeatmap(year) {
+      document.getElementById('heatmap-year-label').textContent = year + '年';
+      try {
+        const res = await fetch(`/api/yearly-heatmap?year=${year}`);
+        const data = await res.json();
+        renderHeatmap(data.year, data.heatmap);
+      } catch (err) {
+        document.getElementById('heatmap-grid').innerHTML = '<p class="text-dim" style="font-size:0.8rem;">加载失败</p>';
+      }
+    }
+
+    function renderHeatmap(year, heatmap) {
+      // 计算该年1月1日是星期几（0=Sun, 1=Mon...）
+      const jan1 = new Date(year, 0, 1);
+      const jan1Day = jan1.getDay(); // 0=Sun
+
+      // 生成53周x7天的网格
+      const grid = document.getElementById('heatmap-grid');
+      grid.innerHTML = '';
+
+      // 月份标签
+      const monthsEl = document.getElementById('heatmap-months');
+      monthsEl.innerHTML = '';
+      const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+      // 计算每周的起始月份位置
+      const totalWeeks = 53;
+      const monthPositions = [];
+      let lastMonth = -1;
+      for (let w = 0; w < totalWeeks; w++) {
+        // 该周周一的日期
+        const weekStart = new Date(year, 0, 1);
+        weekStart.setDate(weekStart.getDate() + w * 7 - jan1Day + 1);
+        const m = weekStart.getMonth();
+        if (m !== lastMonth) {
+          monthPositions.push({ month: m, week: w });
+          lastMonth = m;
+        }
+      }
+
+      monthPositions.forEach(mp => {
+        const label = document.createElement('span');
+        label.className = 'heatmap-month-label';
+        label.textContent = monthNames[mp.month];
+        label.style.gridColumn = mp.week + 1;
+        monthsEl.appendChild(label);
+      });
+
+      // 计算颜色分级
+      const hours = Object.values(heatmap);
+      const maxHours = hours.length ? Math.max(...hours) : 1;
+
+      let totalDays = 0;
+      let totalHoursYear = 0;
+
+      // 创建网格格子
+      for (let w = 0; w < totalWeeks; w++) {
+        for (let d = 0; d < 7; d++) {
+          // 计算该格子对应的日期
+          const dayOffset = w * 7 + d - jan1Day;
+          const cellDate = new Date(year, 0, 1 + dayOffset);
+
+          // 只显示该年的日期
+          if (cellDate.getFullYear() !== year) continue;
+
+          const dateStr = cellDate.toISOString().split('T')[0];
+          const cellHours = heatmap[dateStr] || 0;
+
+          if (cellHours > 0) {
+            totalDays++;
+            totalHoursYear += cellHours;
+          }
+
+          const cell = document.createElement('span');
+          cell.className = 'heatmap-cell';
+          cell.title = `${dateStr}: ${cellHours}h`;
+
+          // 颜色分级
+          if (cellHours === 0) {
+            cell.classList.add('heatmap-level-0');
+          } else if (cellHours <= maxHours * 0.25) {
+            cell.classList.add('heatmap-level-1');
+          } else if (cellHours <= maxHours * 0.5) {
+            cell.classList.add('heatmap-level-2');
+          } else if (cellHours <= maxHours * 0.75) {
+            cell.classList.add('heatmap-level-3');
+          } else {
+            cell.classList.add('heatmap-level-4');
+          }
+
+          cell.style.gridColumn = w + 1;
+          cell.style.gridRow = d + 1;
+          grid.appendChild(cell);
+        }
+      }
+
+      // 统计信息
+      document.getElementById('heatmap-stats').innerHTML =
+        `全年学习 <strong style="color:var(--gold-bright)">${totalDays}</strong> 天，累计 <strong style="color:var(--gold-bright)">${totalHoursYear.toFixed(1)}</strong> 小时`;
+    }
+
+    // 初始加载
+    loadHeatmap(currentHeatmapYear);
+
+    // ====== 月度AI复盘 ======
+    async function generateMonthlyReview() {
+      const month = document.getElementById('review-month').value;
+      const btn = document.getElementById('btn-generate-review');
+      const resultEl = document.getElementById('review-result');
+
+      btn.disabled = true;
+      btn.textContent = '🌊 航海复盘生成中...';
+      resultEl.innerHTML = '<div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div></div>';
+
+      try {
+        const res = await fetch('/api/monthly-review', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ month }),
+        });
+        const data = await res.json();
+        const r = JSON.parse(data.review);
+        resultEl.innerHTML = renderReview(r);
+      } catch (err) {
+        resultEl.innerHTML = '<p class="text-dim" style="font-size:0.85rem;color:var(--danger)">生成失败，请重试</p>';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ 生成本月复盘';
+      }
+    }
+
+    function renderReview(r) {
+      let html = '<div class="review-card">';
+      html += '<div class="review-card-header">';
+      html += `<span class="review-mood">${r.mood || ''}</span>`;
+      html += `<span class="review-title">${r.title || ''}</span>`;
+      html += '</div>';
+      if (r.summary) {
+        html += `<p class="review-summary">${r.summary}</p>`;
+      }
+      if (r.highlights && r.highlights.length) {
+        html += '<div class="review-section"><div class="review-section-title">✨ 亮点</div><ul>';
+        r.highlights.forEach(h => { html += `<li>${h}</li>`; });
+        html += '</ul></div>';
+      }
+      if (r.improvements && r.improvements.length) {
+        html += '<div class="review-section"><div class="review-section-title">📌 建议</div><ul>';
+        r.improvements.forEach(s => { html += `<li>${s}</li>`; });
+        html += '</ul></div>';
+      }
+      if (r.next_month) {
+        html += `<div class="review-next">→ ${r.next_month}</div>`;
+      }
+      html += '</div>';
+      return html;
+    }
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

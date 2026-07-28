@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0a1628">
+  <meta name="theme-color" content="#060e1a">
   <link rel="manifest" href="/static/manifest.json">
   <link rel="icon" href="/static/icon.png">
   <title>航海 · Sprint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -43,14 +46,14 @@
         <span style="font-size:0.75rem;color:var(--text-dim)">连续{{ stats.streak }}天 🔥</span>
       </div>
       <div class="progress-bar">
-        {% set weekly_target = 40 %}
+        {% set weekly_target = 30 %}
         {% set pct = [((stats.total_hours / weekly_target) * 100)|int, 100]|min %}
         <div class="progress-fill" style="width:{{ pct }}%"></div>
       </div>
       <div style="text-align:right;font-size:0.7rem;color:var(--text-dim);margin-top:4px;">目标 {{ weekly_target }}h / 周</div>
     </div>
 
-    <!-- ====== 里程碑地图 ====== -->
+    <!-- ====== 里程碑地图 - 暗蓝/墨绿古地图 ====== -->
     <div class="milestone-map-v2 animate-in animate-delay-2">
       <div class="map-title">🗺️ 里程碑地图</div>
       <div class="map-viewport">
@@ -58,14 +61,34 @@
         <img src="/static/route-map.jpg" alt="古地图" class="map-bg">
         <div class="map-overlay"></div>
 
-        <!-- SVG 连线层 -->
-        <svg class="route-svg" viewBox="0 0 400 520" preserveAspectRatio="xMidYMid meet">
-          <!-- 主线：1→2→3→4→5→6→7 -->
-          <path class="route-line main-line" d="M 50 60 Q 80 55 110 65 Q 140 80 170 75 Q 200 68 230 80 Q 255 90 270 120 Q 280 150 285 170 Q 300 150 320 130"/>
-          <!-- 北线：7→8→10 -->
-          <path class="route-line branch-line" d="M 320 130 Q 340 145 355 190 Q 350 230 310 260 Q 310 330 310 440"/>
-          <!-- 南线：7→9→10 -->
-          <path class="route-line branch-line" d="M 320 130 Q 310 200 280 350 Q 290 400 310 440"/>
+        <!-- SVG 连线层 - 手绘感bezier航线 -->
+        <svg class="route-svg" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid meet">
+          <!-- 手绘感SVG滤镜 -->
+          <defs>
+            <filter id="handdrawn" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="2" result="noise" seed="3"/>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.8" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+            <!-- 金色光晕 -->
+            <filter id="goldGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- 主线：1→2→3→4→5→6→7（蜿蜒S形bezier曲线） -->
+          <path class="route-line main-line" d="M 200 558 C 130 530 100 510 140 490 C 180 470 260 448 240 420 C 220 400 120 378 140 350 C 160 332 270 310 250 280 C 230 262 130 240 150 212 C 170 194 230 168 200 142"/>
+          <!-- 北线：灯塔→安娜堡 -->
+          <path class="route-line branch-line" d="M 200 140 C 260 116 310 90 322 76"/>
+          <!-- 南线：灯塔→UCL -->
+          <path class="route-line branch-line" d="M 200 140 C 140 116 90 90 78 76"/>
+          <!-- 北线：安娜堡→终点 -->
+          <path class="route-line branch-line" d="M 322 76 C 300 52 250 32 200 30"/>
+          <!-- 南线：UCL→终点 -->
+          <path class="route-line branch-line" d="M 78 76 C 100 52 150 32 200 30"/>
 
           {# Build a milestone lookup by order_num #}
           {% set ms = {} %}
@@ -75,79 +98,133 @@
 
           <!-- 1. 启航港口 -->
           <g class="waypoint {% if ms.get(1) and ms[1].reached %}reached{% elif ms.get(1) and ms[1].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="50" cy="60" r="12" class="wp-circle"/>
-            <text x="50" y="64" class="wp-icon">⚓</text>
-            <text x="50" y="85" class="wp-label">启航港口</text>
+            {% if ms.get(1) and ms[1].reached %}
+            <circle cx="200" cy="558" r="10" class="wp-dot-reached" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="200" cy="558" r="10" class="wp-dot-dim"/>
+            {% endif %}
+            <text x="200" y="563" class="wp-icon">⚓</text>
+            <text x="200" y="586" class="wp-label">启航港口</text>
           </g>
           <!-- 2. 托福90+ -->
           <g class="waypoint {% if ms.get(2) and ms[2].reached %}reached{% elif ms.get(2) and ms[2].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="110" cy="65" r="12" class="wp-circle"/>
-            <text x="110" y="69" class="wp-icon">📝</text>
-            <text x="110" y="90" class="wp-label">托福90+</text>
+            {% if ms.get(2) and ms[2].reached %}
+            <circle cx="140" cy="490" r="10" class="wp-dot-reached" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="140" cy="490" r="10" class="wp-dot-dim"/>
+            {% endif %}
+            <text x="140" y="495" class="wp-icon">📝</text>
+            <text x="114" y="494" class="wp-label wp-label-left">托福90+</text>
           </g>
           <!-- 3. 物理1·五分礁 -->
           <g class="waypoint {% if ms.get(3) and ms[3].reached %}reached{% elif ms.get(3) and ms[3].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="170" cy="75" r="12" class="wp-circle"/>
-            <text x="170" y="79" class="wp-icon">⚡</text>
-            <text x="170" y="100" class="wp-label">物理1·五分礁</text>
+            {% if ms.get(3) and ms[3].reached %}
+            <circle cx="240" cy="420" r="10" class="wp-dot-reached" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="240" cy="420" r="10" class="wp-dot-dim"/>
+            {% endif %}
+            <text x="240" y="425" class="wp-icon">⚡</text>
+            <text x="266" y="424" class="wp-label wp-label-right">物理1·五分礁</text>
           </g>
-          <!-- 4. 统计学·五分滩 -->
+          <!-- 4. 统计·五分滩 -->
           <g class="waypoint {% if ms.get(4) and ms[4].reached %}reached{% elif ms.get(4) and ms[4].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="230" cy="80" r="12" class="wp-circle"/>
-            <text x="230" y="84" class="wp-icon">📊</text>
-            <text x="230" y="105" class="wp-label">统计·五分滩</text>
+            {% if ms.get(4) and ms[4].reached %}
+            <circle cx="140" cy="350" r="10" class="wp-dot-reached" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="140" cy="350" r="10" class="wp-dot-dim"/>
+            {% endif %}
+            <text x="140" y="355" class="wp-icon">📊</text>
+            <text x="114" y="354" class="wp-label wp-label-left">统计·五分滩</text>
           </g>
-          <!-- 5. 微积分BC·五分湾 -->
+          <!-- 5. 微积BC·五分湾 -->
           <g class="waypoint {% if ms.get(5) and ms[5].reached %}reached{% elif ms.get(5) and ms[5].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="270" cy="120" r="12" class="wp-circle"/>
-            <text x="270" y="124" class="wp-icon">📐</text>
-            <text x="270" y="145" class="wp-label">微积BC·五分湾</text>
+            {% if ms.get(5) and ms[5].reached %}
+            <circle cx="250" cy="280" r="10" class="wp-dot-reached" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="250" cy="280" r="10" class="wp-dot-dim"/>
+            {% endif %}
+            <text x="250" y="285" class="wp-icon">📐</text>
+            <text x="276" y="284" class="wp-label wp-label-right">微积BC·五分湾</text>
           </g>
           <!-- 6. 物理C·五分岬 -->
           <g class="waypoint {% if ms.get(6) and ms[6].reached %}reached{% elif ms.get(6) and ms[6].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="285" cy="170" r="12" class="wp-circle"/>
-            <text x="285" y="174" class="wp-icon">🔬</text>
-            <text x="330" y="175" class="wp-label wp-label-right">物理C·五分岬</text>
+            {% if ms.get(6) and ms[6].reached %}
+            <circle cx="150" cy="212" r="10" class="wp-dot-reached" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="150" cy="212" r="10" class="wp-dot-dim"/>
+            {% endif %}
+            <text x="150" y="217" class="wp-icon">🔬</text>
+            <text x="124" y="216" class="wp-label wp-label-left">物理C·五分岬</text>
           </g>
           <!-- 7. 核心灯塔 ⭐ -->
           <g class="waypoint lighthouse {% if ms.get(7) and ms[7].reached %}reached{% elif ms.get(7) and ms[7].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="320" cy="130" r="16" class="wp-circle lighthouse-circle"/>
-            <text x="320" y="135" class="wp-icon lighthouse-icon">⭐</text>
-            <text x="320" y="108" class="wp-label wp-label-up">核心灯塔</text>
+            {% if ms.get(7) and ms[7].reached %}
+            <circle cx="200" cy="142" r="14" class="wp-dot-reached lighthouse-dot" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="200" cy="142" r="14" class="wp-dot-dim lighthouse-dot"/>
+            {% endif %}
+            <text x="200" y="148" class="wp-icon lighthouse-icon">⭐</text>
+            <text x="200" y="116" class="wp-label wp-label-up">核心灯塔</text>
           </g>
-          <!-- 8. 密歇根安娜堡 (北线) -->
+          <!-- 8. 安娜堡 (北线) -->
           <g class="waypoint {% if ms.get(8) and ms[8].reached %}reached{% elif ms.get(8) and ms[8].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="355" cy="190" r="12" class="wp-circle"/>
-            <text x="355" y="194" class="wp-icon">🏛</text>
-            <text x="355" y="215" class="wp-label">安娜堡</text>
-            <text x="355" y="228" class="wp-sublabel">北线·美本</text>
+            {% if ms.get(8) and ms[8].reached %}
+            <circle cx="322" cy="76" r="10" class="wp-dot-reached" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="322" cy="76" r="10" class="wp-dot-dim"/>
+            {% endif %}
+            <text x="322" y="81" class="wp-icon">🏛</text>
+            <text x="342" y="74" class="wp-label wp-label-right">安娜堡</text>
+            <text x="342" y="92" class="wp-sublabel wp-label-right">北线·美本</text>
           </g>
           <!-- 9. UCL (南线) -->
           <g class="waypoint {% if ms.get(9) and ms[9].reached %}reached{% elif ms.get(9) and ms[9].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="280" cy="350" r="12" class="wp-circle"/>
-            <text x="280" y="354" class="wp-icon">🎓</text>
-            <text x="230" y="355" class="wp-label wp-label-left">UCL</text>
-            <text x="230" y="368" class="wp-sublabel">南线·英本</text>
+            {% if ms.get(9) and ms[9].reached %}
+            <circle cx="78" cy="76" r="10" class="wp-dot-reached" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="78" cy="76" r="10" class="wp-dot-dim"/>
+            {% endif %}
+            <text x="78" y="81" class="wp-icon">🎓</text>
+            <text x="58" y="74" class="wp-label wp-label-left">UCL</text>
+            <text x="58" y="92" class="wp-sublabel wp-label-left">南线·英本</text>
           </g>
           <!-- 10. 提交申请港 (终点) -->
           <g class="waypoint {% if ms.get(10) and ms[10].reached %}reached{% elif ms.get(10) and ms[10].is_current %}current{% else %}dim{% endif %}">
-            <circle cx="310" cy="440" r="14" class="wp-circle"/>
-            <text x="310" y="444" class="wp-icon">🏰</text>
-            <text x="310" y="468" class="wp-label">提交申请港</text>
+            {% if ms.get(10) and ms[10].reached %}
+            <circle cx="200" cy="30" r="12" class="wp-dot-reached" filter="url(#goldGlow)"/>
+            {% else %}
+            <circle cx="200" cy="30" r="12" class="wp-dot-dim"/>
+            {% endif %}
+            <text x="200" y="35" class="wp-icon">🏰</text>
+            <text x="200" y="10" class="wp-label wp-label-up">提交申请港</text>
           </g>
 
           <!-- 分岔标记 -->
-          <text x="345" y="155" class="route-tag north-tag">北线</text>
-          <text x="260" y="260" class="route-tag south-tag">南线</text>
+          <text x="280" y="102" class="route-tag north-tag">北线</text>
+          <text x="112" y="102" class="route-tag south-tag">南线</text>
+
+          <!-- 船图标 - 在最新到达的里程碑位置 -->
+          {% set ship_positions = {1: (200, 558), 2: (140, 490), 3: (240, 420), 4: (140, 350), 5: (250, 280), 6: (150, 212), 7: (200, 142), 8: (322, 76), 9: (78, 76), 10: (200, 30)} %}
+          {% if latest_reached > 0 %}
+            {% set sp = ship_positions.get(latest_reached, (200, 558)) %}
+            <g class="ship-icon-group" transform="translate({{ sp[0] }}, {{ sp[1] - 22 }})">
+              <text class="ship-icon-svg" text-anchor="middle" dominant-baseline="middle">⛵</text>
+            </g>
+          {% endif %}
         </svg>
       </div>
     </div>
 
-    <!-- ====== 航海观察（AI） ====== -->
+    <!-- ====== 航海观察（AI） - 可折叠 ====== -->
     <div class="card insights-card animate-in animate-delay-3">
-      <div class="card-title">🔭 船长夜观星象</div>
-      <div id="insights-content">
-        <div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div></div>
+      <div class="insights-toggle" id="insights-toggle" onclick="toggleInsights()">
+        <span class="card-title" style="margin-bottom:0">🔭 船长夜观星象</span>
+        <span class="toggle-arrow" id="toggle-arrow">▸</span>
+      </div>
+      <div class="insights-body" id="insights-body">
+        <div id="insights-content" style="padding-top:8px">
+          <div class="loading"><div class="loading-dots"><span></span><span></span><span></span></div></div>
+        </div>
       </div>
     </div>
 
@@ -156,7 +233,7 @@
       <div class="card-title">📡 学科掌握度</div>
       <div class="radar-bars">
         {% set subject_targets = {'物理1': 175, '统计': 175, '微积分BC': 175, '物理C': 150, '托福': 120} %}
-        {% set bar_colors = {'物理1': '#4a90d9', '统计': '#3db8a0', '微积分BC': '#d4a574', '物理C': '#9b59b6', '托福': '#e74c3c'} %}
+        {% set bar_colors = {'物理1': '#3a7bc8', '统计': '#2d9a85', '微积分BC': '#d4a574', '物理C': '#8b49a6', '托福': '#c94444'} %}
         {% for s in stats.by_subject %}
           {% set target = subject_targets.get(s.subject, 100) %}
           {% set raw_pct = (s.hours / target) * 100 %}
@@ -167,8 +244,11 @@
               <span class="radar-pct">{{ pct }}%</span>
             </div>
             <div class="radar-track">
-              <div class="radar-fill" style="width:0%;background:{{ bar_colors.get(s.subject, '#7f8c8d') }}" data-target-width="{{ pct }}%"></div>
+              <div class="radar-fill" style="width:0%;background:{{ bar_colors.get(s.subject, '#6e7f99') }}" data-target-width="{{ pct }}%"></div>
             </div>
+            {% if predictions.get(s.subject) is not none %}
+            <div class="radar-prediction">预测分：{{ predictions[s.subject] }}{% if s.subject == '托福' %}/120{% else %}/5{% endif %}</div>
+            {% endif %}
           </div>
         {% endfor %}
         {% for sub, target in subject_targets.items() %}
@@ -179,8 +259,11 @@
               <span class="radar-pct">0%</span>
             </div>
             <div class="radar-track">
-              <div class="radar-fill" style="width:0%;background:{{ bar_colors.get(sub, '#7f8c8d') }}" data-target-width="0%"></div>
+              <div class="radar-fill" style="width:0%;background:{{ bar_colors.get(sub, '#6e7f99') }}" data-target-width="0%"></div>
             </div>
+            {% if predictions.get(sub) is not none %}
+            <div class="radar-prediction">预测分：{{ predictions[sub] }}{% if sub == '托福' %}/120{% else %}/5{% endif %}</div>
+            {% endif %}
           </div>
           {% endif %}
         {% endfor %}
@@ -190,36 +273,63 @@
       </div>
     </div>
 
-    <!-- ====== 托福预估 ====== -->
-    <div class="card toefl-card animate-in animate-delay-5">
-      <div class="card-title">🎯 托福预估</div>
-      {% set toefl_hours = 0 %}
-      {% for s in stats.by_subject %}
-        {% if s.subject == '托福' %}{% set toefl_hours = s.hours %}{% endif %}
-      {% endfor %}
-      {% set toefl_estimate = [80 + (toefl_hours * 0.5)|int, 120]|min %}
-      {% set toefl_raw_pct = (toefl_estimate / 110) * 100 %}
-      {% set toefl_pct = [toefl_raw_pct|int, 100]|min %}
-      <div class="toefl-score">{{ toefl_estimate }}</div>
-      <div class="toefl-target">目标：110+ | 已投入 {{ toefl_hours }}h</div>
-      <div class="toefl-progress">
-        <div class="toefl-progress-fill" style="width:{{ toefl_pct }}%"></div>
       </div>
-    </div>
 
-  </div>
-
-  <!-- 底部导航 - 3tab -->
+  <!-- 底部导航 - 4 tab -->
   <nav class="bottom-nav">
-    <a href="/" class="nav-item active"><span class="nav-icon">⛵</span><span class="nav-label">航海</span></a>
-    <a href="/log" class="nav-item"><span class="nav-icon">📝</span><span class="nav-label">日志</span></a>
-    <a href="/route" class="nav-item"><span class="nav-icon">🧭</span><span class="nav-label">航线</span></a>
+    <a href="/" class="nav-item active">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 18c2.5-1.5 5-1.5 9-1.5s6.5 0 9 1.5"/>
+        <path d="M12 3v13.5"/>
+        <path d="M5 15c0-4 3-8 7-12 4 4 7 8 7 12"/>
+      </svg>
+      <span class="nav-label">航海</span>
+    </a>
+    <a href="/log" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 3c-2 1-4 3-5 6l-3 8 8-3c3-1 5-3 6-5"/>
+        <path d="M9 17l-3 3"/>
+        <path d="M14 8c1-1 2.5-1.5 4-1"/>
+      </svg>
+      <span class="nav-label">日志</span>
+    </a>
+    <a href="/route" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polygon points="12,3 13.5,10.5 12,8 10.5,10.5" fill="currentColor" opacity="0.6"/>
+        <polygon points="12,21 10.5,13.5 12,16 13.5,13.5" fill="currentColor" opacity="0.3"/>
+        <line x1="12" y1="3" x2="12" y2="5"/>
+        <line x1="12" y1="19" x2="12" y2="21"/>
+        <line x1="3" y1="12" x2="5" y2="12"/>
+        <line x1="19" y1="12" x2="21" y2="12"/>
+      </svg>
+      <span class="nav-label">航线</span>
+    </a>
+    <a href="/review" class="nav-item">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18"/>
+        <path d="M2 2l7.586 7.586"/>
+        <circle cx="11" cy="11" r="2"/>
+      </svg>
+      <span class="nav-label">复盘</span>
+    </a>
   </nav>
 
   <!-- Toast -->
   <div id="toast" class="toast"></div>
 
   <script>
+    // 折叠星象区域
+    function toggleInsights() {
+      const toggle = document.getElementById('insights-toggle');
+      const body = document.getElementById('insights-body');
+      const arrow = document.getElementById('toggle-arrow');
+      const isExpanded = toggle.classList.toggle('expanded');
+      body.classList.toggle('expanded');
+      arrow.textContent = isExpanded ? '▾' : '▸';
+    }
+
     // 加载 AI 分析
     fetch('/api/insights')
       .then(r => r.json())
