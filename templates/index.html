@@ -273,6 +273,23 @@
       </div>
     </div>
 
+    <!-- ====== 托福预估 ====== -->
+    <div class="card toefl-card animate-in animate-delay-5">
+      <div class="card-title">🎯 托福预估</div>
+      {% set toefl_hours = 0 %}
+      {% for s in stats.by_subject %}
+        {% if s.subject == '托福' %}{% set toefl_hours = s.hours %}{% endif %}
+      {% endfor %}
+      {% set toefl_estimate = [80 + (toefl_hours * 0.5)|int, 120]|min %}
+      {% set toefl_raw_pct = (toefl_estimate / 100) * 100 %}
+      {% set toefl_pct = [toefl_raw_pct|int, 100]|min %}
+      <div class="toefl-score">{{ toefl_estimate }}</div>
+      <div class="toefl-target">目标：100+ | 已投入 {{ toefl_hours }}h</div>
+      <div class="toefl-progress">
+        <div class="toefl-progress-fill" style="width:{{ toefl_pct }}%"></div>
+      </div>
+    </div>
+
       </div>
 
   <!-- 底部导航 - 4 tab -->
