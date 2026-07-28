@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sprint-v4';
+const CACHE_NAME = 'sprint-v5';
 const STATIC_ASSETS = [
   '/',
   '/log',

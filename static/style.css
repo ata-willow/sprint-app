@@ -752,6 +752,139 @@ body {
 .btn-goal-add:hover { transform: scale(1.05); }
 .btn-goal-add:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
+/* ====== 本周航行 - 游戏化航海卡片 ====== */
+.weekly-voyage-card {
+  background: linear-gradient(145deg, #1a1f2e 0%, #141820 100%);
+  border: 1px solid rgba(212, 165, 116, 0.18);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.wv-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.wv-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wv-compass {
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid rgba(212, 165, 116, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--gold);
+  position: relative;
+}
+
+.wv-compass::after {
+  content: '';
+  position: absolute;
+  width: 1.5px;
+  height: 14px;
+  background: linear-gradient(180deg, var(--gold-bright), transparent);
+  transform: rotate(-30deg);
+  opacity: 0.6;
+}
+
+.wv-title-text {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--text-bright);
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+.wv-streak-badge {
+  background: rgba(212, 165, 116, 0.12);
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+
+.wv-stats-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.wv-hours {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.wv-hours-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.wv-hours-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  font-family: var(--font-serif);
+  line-height: 1;
+}
+
+.wv-hours-unit {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-left: 2px;
+}
+
+.wv-streak-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.wv-fire {
+  font-size: 0.9rem;
+}
+
+.wv-progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.wv-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-bright) 100%);
+  border-radius: 4px;
+  transition: width 0.8s ease;
+  box-shadow: 0 0 8px rgba(212, 165, 116, 0.4);
+}
+
+.wv-target {
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
 /* ====== 分数并排 ====== */
 .score-row { display: flex; align-items: center; gap: 6px; }
 .score-divider { color: var(--text-dim); font-size: 1.1rem; font-weight: 600; }

@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=4">
+  <link rel="stylesheet" href="/static/style.css?v=5">
 </head>
 <body>
   <div class="page-container">
@@ -41,19 +41,32 @@
       </div>
     </div>
 
-    <!-- ====== 本周航线红旗 ====== -->
-    <div class="weekly-flag animate-in animate-delay-1">
-      <h3>📍 本周航线</h3>
-      <div style="display:flex;justify-content:space-between;align-items:baseline;">
-        <span style="font-size:0.85rem;color:var(--text)">已航行 <strong style="color:var(--gold-bright)">{{ stats.total_hours }}</strong> 小时</span>
-        <span style="font-size:0.75rem;color:var(--text-dim)">连续{{ stats.streak }}天 🔥</span>
+    <!-- ====== 本周航行（游戏化航海卡片） ====== -->
+    <div class="weekly-voyage-card animate-in animate-delay-1">
+      <div class="wv-header">
+        <div class="wv-title-row">
+          <span class="wv-compass">⊕</span>
+          <span class="wv-title-text">本周航行</span>
+        </div>
+        <div class="wv-streak-badge">连续{{ stats.streak }}天</div>
       </div>
-      <div class="progress-bar">
+      <div class="wv-stats-row">
+        <div class="wv-hours">
+          <span class="wv-hours-label">已航行</span>
+          <span class="wv-hours-value">{{ stats.total_hours }}</span>
+          <span class="wv-hours-unit">小时</span>
+        </div>
+        <div class="wv-streak-text">
+          <span>连续{{ stats.streak }}天</span>
+          <span class="wv-fire">🔥</span>
+        </div>
+      </div>
+      <div class="wv-progress-bar">
         {% set weekly_target = 30 %}
         {% set pct = [((stats.total_hours / weekly_target) * 100)|int, 100]|min %}
-        <div class="progress-fill" style="width:{{ pct }}%"></div>
+        <div class="wv-progress-fill" style="width:{{ pct }}%"></div>
       </div>
-      <div style="text-align:right;font-size:0.7rem;color:var(--text-dim);margin-top:4px;">目标 {{ weekly_target }}h / 周</div>
+      <div class="wv-target">目标 {{ weekly_target }}h / 周</div>
     </div>
 
     <!-- ====== 里程碑地图 - 暗蓝/墨绿古地图 ====== -->
