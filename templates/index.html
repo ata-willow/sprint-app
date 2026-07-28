@@ -233,7 +233,10 @@
     <!-- ====== 航海观察（AI） - 可折叠 ====== -->
     <div class="card insights-card animate-in animate-delay-3">
       <div class="insights-toggle" id="insights-toggle" onclick="toggleInsights()">
-        <span class="card-title" style="margin-bottom:0">🔭 船长夜观星象</span>
+        <span class="card-title" style="margin-bottom:0">
+          <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="18" x2="21" y2="6"/><circle cx="5" cy="18" r="2"/><line x1="15" y1="3" x2="21" y2="9"/><line x1="18" y1="3" x2="21" y2="6"/></svg>
+          船长夜观星象
+        </span>
         <span class="toggle-arrow" id="toggle-arrow">▸</span>
       </div>
       <div class="insights-body" id="insights-body">
@@ -245,7 +248,10 @@
 
     <!-- ====== 学科掌握度 ====== -->
     <div class="card animate-in animate-delay-4">
-      <div class="card-title">📡 学科掌握度</div>
+      <div class="card-title">
+        <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V12"/><path d="M5 12C5 8 8 4 12 4c4 0 7 4 7 8"/><path d="M12 8v8"/><circle cx="12" cy="4" r="1"/></svg>
+        学科掌握度
+      </div>
       <div class="radar-bars">
         {% set subject_targets = {'物理1': 175, '统计': 175, '微积分BC': 175, '物理C': 150, '托福': 120} %}
         {% set bar_colors = {'物理1': '#3a7bc8', '统计': '#2d9a85', '微积分BC': '#d4a574', '物理C': '#8b49a6', '托福': '#c94444'} %}
@@ -290,7 +296,10 @@
 
     <!-- ====== 托福预估 ====== -->
     <div class="card toefl-card animate-in animate-delay-5">
-      <div class="card-title">🎯 托福预估</div>
+      <div class="card-title">
+        <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+        托福预估
+      </div>
       {% set toefl_hours = 0 %}
       {% for s in stats.by_subject %}
         {% if s.subject == '托福' %}{% set toefl_hours = s.hours %}{% endif %}
