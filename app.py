@@ -6,7 +6,7 @@ import requests as req_lib
 from flask import Flask, render_template, request, jsonify
 from models import (init_db, add_log, get_logs, get_stats, get_milestones,
                     update_milestone, add_mock_score, get_mock_scores,
-                    get_subject_predictions, get_yearly_heatmap, get_timeline)
+                    get_subject_predictions, get_yearly_heatmap, get_timeline, get_monthly_calendar)
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -342,6 +342,14 @@ def api_monthly_review():
             "next_month": ""
         }
         return jsonify({'review': _json.dumps(fallback, ensure_ascii=False)})
+
+
+@app.route('/api/monthly-calendar')
+def api_monthly_calendar():
+    """获取某个月的日历数据"""
+    ym = request.args.get('month', datetime.now().strftime('%Y-%m'))
+    data = get_monthly_calendar(ym)
+    return jsonify(data)
 
 
 if __name__ == '__main__':

@@ -338,3 +338,43 @@ def get_yearly_heatmap(year=None):
         heatmap[r['date']] = round(r['hours'], 1)
 
     return {'year': year, 'heatmap': heatmap}
+def get_monthly_calendar(year_month):
+    """获取某个月的日历数据：每天的学习摘要"""
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute(
+        """SELECT date, subject, duration_hours, content, unit, mood
+           FROM logs WHERE date LIKE ? AND log_type = 'study'
+           ORDER BY date""",
+        (f'{year_month}-%',)
+    )
+    logs = [dict(r) for r in c.fetchall()]
+    conn.close()
+
+    # Group by date
+    days = {}
+    for l in logs:
+        d = l['date']
+        if d not in days:
+            days[d] = {'subjects': [], 'total_hours': 0, 'mood': l.get('mood', '')}
+        days[d]['subjects'].append({
+            'subject': l['subject'],
+            'unit': l.get('unit', ''),
+            'content': l.get('content', ''),
+            'hours': l['duration_hours'],
+        })
+        days[d]['total_hours'] += l['duration_hours']
+
+    # Get mock scores for this month
+    c2 = sqlite3.connect(DB_PATH)
+    c2.row_factory = sqlite3.Row
+    cur2 = c2.cursor()
+    cur2.execute(
+        "SELECT subject, score, exam_name FROM mock_scores WHERE date LIKE ?",
+        (f'{year_month}-%',)
+    )
+    scores = [dict(r) for r in cur2.fetchall()]
+    c2.close()
+
+    return {'days': days, 'scores': scores}

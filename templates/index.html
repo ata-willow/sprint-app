@@ -247,7 +247,7 @@
               <div class="radar-fill" style="width:0%;background:{{ bar_colors.get(s.subject, '#6e7f99') }}" data-target-width="{{ pct }}%"></div>
             </div>
             {% if predictions.get(s.subject) is not none %}
-            <div class="radar-prediction">预测分：{{ predictions[s.subject] }}{% if s.subject == '托福' %}/120{% else %}/5{% endif %}</div>
+
             {% endif %}
           </div>
         {% endfor %}
@@ -262,7 +262,7 @@
               <div class="radar-fill" style="width:0%;background:{{ bar_colors.get(sub, '#6e7f99') }}" data-target-width="0%"></div>
             </div>
             {% if predictions.get(sub) is not none %}
-            <div class="radar-prediction">预测分：{{ predictions[sub] }}{% if sub == '托福' %}/120{% else %}/5{% endif %}</div>
+
             {% endif %}
           </div>
           {% endif %}
@@ -281,13 +281,7 @@
         {% if s.subject == '托福' %}{% set toefl_hours = s.hours %}{% endif %}
       {% endfor %}
       {% set toefl_estimate = [80 + (toefl_hours * 0.5)|int, 120]|min %}
-      {% set toefl_raw_pct = (toefl_estimate / 100) * 100 %}
-      {% set toefl_pct = [toefl_raw_pct|int, 100]|min %}
       <div class="toefl-score">{{ toefl_estimate }}</div>
-      <div class="toefl-target">目标：100+ | 已投入 {{ toefl_hours }}h</div>
-      <div class="toefl-progress">
-        <div class="toefl-progress-fill" style="width:{{ toefl_pct }}%"></div>
-      </div>
     </div>
 
       </div>

@@ -99,45 +99,6 @@
       </form>
     </div>
 
-    <!-- 历史记录 - 混合展示 -->
-    <div class="log-notebook-card animate-in animate-delay-2">
-      <div class="card-title">📜 最近记录</div>
-      <div class="recent-records">
-        {% for log in logs[:15] %}
-        <div class="recent-record-item recent-study">
-          <div class="recent-record-header">
-            <span class="recent-record-type">📚</span>
-            <span class="recent-record-subject">{{ log.subject }}</span>
-            <span class="recent-record-hours">{{ log.duration_hours }}h</span>
-            <span class="recent-record-date">{{ log.date }}</span>
-          </div>
-          {% if log.unit %}
-          <div class="recent-record-unit">{{ log.unit }}</div>
-          {% endif %}
-          {% if log.content %}
-          <div class="recent-record-content">{{ log.content[:60] }}{% if log.content|length > 60 %}...{% endif %}</div>
-          {% endif %}
-          {% if log.insight %}
-          <div class="recent-record-insight">💡 {{ log.insight }}</div>
-          {% endif %}
-        </div>
-        {% endfor %}
-        {% for ms in mock_scores[:8] %}
-        <div class="recent-record-item recent-mock">
-          <div class="recent-record-header">
-            <span class="recent-record-type">🎯</span>
-            <span class="recent-record-subject">{{ ms.subject }}</span>
-            {% if ms.exam_name %}<span class="recent-record-exam">{{ ms.exam_name }}</span>{% endif %}
-            <span class="recent-record-score">{{ ms.score }}分</span>
-            <span class="recent-record-date">{{ ms.date }}</span>
-          </div>
-        </div>
-        {% endfor %}
-        {% if not logs and not mock_scores %}
-        <p class="text-dim text-center" style="padding:8px;font-size:0.78rem;">还没有记录</p>
-        {% endif %}
-      </div>
-    </div>
 
     <!-- 顿悟时刻收藏区 -->
     {% if insights %}
