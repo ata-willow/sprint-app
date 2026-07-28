@@ -1,8 +1,9 @@
-const CACHE_NAME = 'sprint-v3';
+const CACHE_NAME = 'sprint-v4';
 const STATIC_ASSETS = [
   '/',
   '/log',
   '/route',
+  '/review',
   '/star',
   '/static/style.css',
   '/static/manifest.json',
