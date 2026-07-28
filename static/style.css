@@ -406,24 +406,29 @@ body {
 /* ====== 科目选择器 ====== */
 .subject-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .subject-chip {
-  padding: 8px 16px;
-  border: 1px solid rgba(212, 165, 116, 0.25);
-  border-radius: 20px;
-  background: rgba(212, 165, 116, 0.06);
-  color: var(--text-dim);
-  font-size: 0.85rem;
+  padding: 10px 18px;
+  border: 1.5px solid rgba(232, 197, 71, 0.35);
+  border-radius: 24px;
+  background: linear-gradient(135deg, #1a1f2e 0%, #141820 100%);
+  color: var(--text);
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.25s;
   user-select: none;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
-.subject-chip:hover { border-color: rgba(212, 165, 116, 0.4); color: var(--text); }
+.subject-chip:hover { 
+  border-color: rgba(232, 197, 71, 0.6); 
+  color: var(--text); 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
 .subject-chip.selected {
   border-color: var(--gold-bright);
   color: var(--gold-bright);
-  background: rgba(232, 197, 71, 0.12);
-  box-shadow: 0 0 12px rgba(232, 197, 71, 0.15);
+  background: linear-gradient(135deg, #2a2f3e 0%, #1a1f2e 100%);
+  box-shadow: 0 0 16px rgba(232, 197, 71, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   font-weight: 600;
 }
 
@@ -449,25 +454,30 @@ body {
 .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212, 165, 116, 0.3); }
 
 /* ====== 模考科目按钮 ====== */
-.mock-subject-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.mock-subject-btns { display: flex; gap: 6px; flex-wrap: wrap; }
 .mock-subject-btn {
-  padding: 4px 10px;
-  border: 1px solid rgba(200, 168, 78, 0.25);
-  border-radius: 4px;
-  background: rgba(200, 168, 78, 0.06);
-  color: var(--text-dim);
-  font-size: 0.75rem;
+  padding: 8px 14px;
+  border: 1.5px solid rgba(232, 197, 71, 0.3);
+  border-radius: 20px;
+  background: linear-gradient(135deg, #1a1f2e 0%, #141820 100%);
+  color: var(--text);
+  font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
   user-select: none;
   white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
-.mock-subject-btn:hover { border-color: rgba(200, 168, 78, 0.5); color: var(--text); }
+.mock-subject-btn:hover { 
+  border-color: rgba(232, 197, 71, 0.5); 
+  color: var(--text); 
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
 .mock-subject-btn.selected {
-  border-color: #c8a84e;
+  border-color: #e8c547;
   color: #ffe680;
-  background: rgba(200, 168, 78, 0.18);
-  box-shadow: 0 0 8px rgba(200, 168, 78, 0.2);
+  background: linear-gradient(135deg, #2a2f3e 0%, #1a1f2e 100%);
+  box-shadow: 0 0 12px rgba(232, 197, 71, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   font-weight: 600;
 }
 
@@ -534,6 +544,20 @@ body {
   bottom: 0;
   height: 1px;
   background: linear-gradient(90deg, rgba(212,165,116,0.3), transparent);
+}
+.voyage-day-group {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 8px 0 16px;
+  border: 1px solid rgba(212, 165, 116, 0.12);
+}
+.voyage-day-group .voyage-entry {
+  margin-bottom: 0;
+  padding: 10px 0;
+}
+.voyage-day-group .voyage-entry + .voyage-entry {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .voyage-day-sep {
   height: 16px;
