@@ -48,7 +48,6 @@
           <span class="wv-compass">⊕</span>
           <span class="wv-title-text">本周航行</span>
         </div>
-        <div class="wv-streak-badge">连续{{ stats.streak }}天</div>
       </div>
       <div class="wv-stats-row">
         <div class="wv-hours">
@@ -56,7 +55,9 @@
           <span class="wv-hours-value">{{ stats.total_hours }}</span>
           <span class="wv-hours-unit">小时</span>
         </div>
-
+        <div class="wv-streak-text">
+          <span>连续{{ stats.streak }}天</span>
+        </div>
       </div>
       <div class="wv-progress-bar">
         {% set weekly_target = 30 %}
