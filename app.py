@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 import requests as req_lib
 from flask import Flask, render_template, request, jsonify
-from models import (init_db, add_log, get_logs, get_stats, get_milestones,
+from sprint.models import (init_db, add_log, get_logs, get_stats, get_milestones,
                     update_milestone, add_mock_score, get_mock_scores,
                     get_subject_predictions, get_yearly_heatmap, get_timeline, get_monthly_calendar)
 
