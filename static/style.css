@@ -238,8 +238,8 @@ body {
 
 /* 手绘感连线 */
 .route-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.main-line { stroke: #c8a84e; stroke-width: 2.5; stroke-dasharray: 8 3 4 2 6 4 3 5 7 2 2 6; opacity: 0.85; filter: url(#handdrawn); }
-.branch-line { stroke: #b8963e; stroke-width: 2; stroke-dasharray: 6 2 3 5 5 3 2 4 4 3 7 2; opacity: 0.6; filter: url(#handdrawn); }
+.main-line { stroke: #e8c547; stroke-width: 3.5; stroke-dasharray: 8 3 4 2 6 4 3 5 7 2 2 6; opacity: 0.95; filter: url(#handdrawn); }
+.branch-line { stroke: #d4b87a; stroke-width: 2.5; stroke-dasharray: 6 2 3 5 5 3 2 4 4 3 7 2; opacity: 0.75; filter: url(#handdrawn); }
 
 /* 航点组 */
 .waypoint { transition: opacity 0.3s; }
@@ -262,14 +262,14 @@ body {
 
 /* 航点图标和标签 */
 .wp-icon { font-size: 14px; text-anchor: middle; dominant-baseline: middle; }
-.wp-label { font-size: 12px; fill: #f5eed8; text-anchor: middle; font-family: var(--font-sans); letter-spacing: 0.5px; font-weight: 500; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+.wp-label { font-size: 12px; fill: #f5eed8; text-anchor: middle; font-family: var(--font-sans); letter-spacing: 0.5px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5); }
 .wp-label-right { text-anchor: start; font-size: 11.5px; }
 .wp-label-left { text-anchor: end; font-size: 11.5px; }
 .wp-label-up { text-anchor: middle; dominant-baseline: auto; }
-.wp-sublabel { font-size: 9px; fill: #d4c9a8; text-anchor: middle; font-family: var(--font-sans); letter-spacing: 0.5px; }
+.wp-sublabel { font-size: 9.5px; fill: #e8dcc0; text-anchor: middle; font-family: var(--font-sans); letter-spacing: 0.5px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
 .waypoint.dim .wp-label, .waypoint.dim .wp-sublabel { fill: rgba(180, 160, 120, 0.5); }
 .waypoint.reached .wp-label { fill: #ffe680; font-weight: 600; }
-.route-tag { font-size: 10px; fill: #c8a84e; font-family: var(--font-sans); letter-spacing: 1px; opacity: 0.7; }
+.route-tag { font-size: 11px; fill: #e8c547; font-family: var(--font-sans); letter-spacing: 1px; opacity: 0.9; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
 .north-tag { text-anchor: start; }
 .south-tag { text-anchor: end; }
 
@@ -756,8 +756,8 @@ body {
 .weekly-voyage-card {
   background: linear-gradient(145deg, #1a1f2e 0%, #141820 100%);
   border: 1px solid rgba(212, 165, 116, 0.18);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 14px;
+  padding: 16px 20px;
   margin-bottom: 16px;
   position: relative;
   overflow: hidden;
@@ -768,7 +768,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .wv-title-row {
