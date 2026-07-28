@@ -126,7 +126,7 @@ def get_stats():
 
     # 各科学习时长
     c.execute("SELECT subject, SUM(duration_hours) as hours FROM logs WHERE log_type = 'study' GROUP BY subject ORDER BY hours DESC")
-    by_subject = [{'subject': r['subject'], 'hours': r['hours']} for r in c.fetchall()]
+    by_subject = [{'subject': r['subject'], 'hours': round(r['hours'], 1)} for r in c.fetchall()]
 
     # 连续打卡天数
     c.execute("SELECT DISTINCT date FROM logs WHERE log_type = 'study' ORDER BY date DESC")

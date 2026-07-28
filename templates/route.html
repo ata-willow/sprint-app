@@ -50,7 +50,7 @@
           <div class="bar-track">
             <div class="bar-fill {{ css_class }}" style="width:{{ pct }}%"></div>
           </div>
-          <span class="bar-value">{{ s.hours }}h</span>
+          <span class="bar-value">{{ s.hours|round(1) }}h</span>
         </div>
         {% endfor %}
         {% if not stats.by_subject %}
@@ -62,7 +62,7 @@
     <!-- 各科占比 -->
     {% if stats.by_subject %}
     <div class="card animate-in animate-delay-2">
-      <div class="card-title">🥧 各科占比</div>
+      <div class="card-title">各科占比</div>
       {% set total = stats.by_subject|map(attribute='hours')|sum %}
       <div class="donut-chart" id="donut-chart"></div>
       <div class="donut-legend">
@@ -89,7 +89,7 @@
             <div class="voyage-content">
               <span class="voyage-subject">{{ item.subject }}</span>
               {% if item.unit %}<span class="voyage-unit">{{ item.unit }}</span>{% endif %}
-              <span class="voyage-hours">{{ item.duration_hours }}h</span>
+              <span class="voyage-hours">{{ item.duration_hours|round(1) }}h</span>
               {% if item.mood %}<span class="voyage-mood">{{ item.mood }}</span>{% endif %}
             </div>
             {% if item.content %}

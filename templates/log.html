@@ -100,18 +100,7 @@
     </div>
 
 
-    <!-- 顿悟时刻收藏区 -->
-    {% if insights %}
-    <div class="insight-collection animate-in animate-delay-3">
-      <h3 style="color:var(--gold-bright);font-size:0.9rem;letter-spacing:1px;margin-bottom:12px;">⭐ 顿悟时刻</h3>
-      {% for ins in insights %}
-      <div class="insight-gem">
-        <div class="gem-subject">{{ ins.subject }} · {{ ins.date }}</div>
-        <div class="gem-text">{{ ins.insight }}</div>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
+    <!-- 顿悟时刻已移至航线页时间线 -->
   </div>
 
   <!-- 底部导航 - 4 tab -->
