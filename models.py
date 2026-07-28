@@ -74,6 +74,10 @@ def init_db():
         c.execute('ALTER TABLE mock_scores ADD COLUMN exam_name TEXT')
     except Exception:
         pass
+    try:
+        c.execute('ALTER TABLE mock_scores ADD COLUMN max_score REAL')
+    except Exception:
+        pass
 
     # 初始化航点数据（仅当表为空时）
     c.execute('SELECT COUNT(*) FROM milestones')
@@ -204,14 +208,14 @@ def update_milestone(order_num, reached, reached_date=None):
 
 # ========== mock_scores 操作 ==========
 
-def add_mock_score(subject, score, date, exam_name=None):
+def add_mock_score(subject, score, date, exam_name=None, max_score=None):
     """添加一条模考分数记录"""
     conn = get_db()
     c = conn.cursor()
     created_at = datetime.now().isoformat()
     c.execute(
-        'INSERT INTO mock_scores (subject, score, date, exam_name, created_at) VALUES (?, ?, ?, ?, ?)',
-        (subject, score, date, exam_name, created_at)
+        'INSERT INTO mock_scores (subject, score, date, exam_name, max_score, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+        (subject, score, date, exam_name, max_score, created_at)
     )
     score_id = c.lastrowid
     conn.commit()
@@ -245,7 +249,7 @@ def get_timeline(limit=30):
     study_rows = [dict(r) for r in c.fetchall()]
 
     # 获取模考记录
-    c.execute('SELECT id, date, subject, score, exam_name, created_at FROM mock_scores ORDER BY date DESC, created_at DESC LIMIT ?', (limit,))
+    c.execute('SELECT id, date, subject, score, exam_name, max_score, created_at FROM mock_scores ORDER BY date DESC, created_at DESC LIMIT ?', (limit,))
     mock_rows = [dict(r) for r in c.fetchall()]
 
     conn.close()

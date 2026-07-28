@@ -93,7 +93,11 @@
         </div>
         <div class="form-group">
           <label>分数</label>
-          <input type="number" id="mock-score" step="0.5" min="0" max="120" placeholder="95" required>
+          <input type="number" id="mock-score" step="0.5" min="0" placeholder="95" required>
+        </div>
+        <div class="form-group">
+          <label>满分（可选）</label>
+          <input type="number" id="mock-max-score" step="1" min="1" placeholder="如 120 / 5 / 100">
         </div>
         <button type="submit" class="btn-submit" style="background:linear-gradient(135deg, #2d9a85 0%, #40916c 100%);">🎯 记录模考</button>
       </form>
@@ -265,17 +269,20 @@
       if (!subject) { showToast('请选择科目'); return; }
       if (!score) { showToast('请输入分数'); return; }
 
+      const maxScore = document.getElementById('mock-max-score').value;
+
       try {
         const res = await fetch('/api/mock-scores', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subject, score: parseFloat(score), date, exam_name: examName || null }),
+          body: JSON.stringify({ subject, score: parseFloat(score), date, exam_name: examName || null, max_score: maxScore ? parseFloat(maxScore) : null }),
         });
         const result = await res.json();
         if (result.ok) {
-          showToast('🎯 模考分数已记录！');
+          showToast(' 模考分数已记录！');
           document.getElementById('mock-score').value = '';
           document.getElementById('mock-exam-name').value = '';
+          document.getElementById('mock-max-score').value = '';
           document.querySelectorAll('#mock-subject-btns .mock-subject-btn').forEach(b => b.classList.remove('selected'));
           document.getElementById('mock-subject').value = '';
           setTimeout(() => location.reload(), 1500);

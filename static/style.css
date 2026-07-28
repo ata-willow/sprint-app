@@ -502,11 +502,42 @@ body {
 .voyage-timeline { padding-left: 16px; border-left: 2px solid rgba(200, 168, 78, 0.3); }
 
 .voyage-entry {
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   padding-left: 12px;
   position: relative;
 }
 
+.voyage-day-header {
+  font-size: 0.78rem;
+  color: var(--gold-bright);
+  font-family: var(--font-serif);
+  font-weight: 600;
+  padding: 8px 0 4px;
+  letter-spacing: 1px;
+  position: relative;
+}
+.voyage-day-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(212,165,116,0.3), transparent);
+}
+.voyage-day-sep {
+  height: 16px;
+  position: relative;
+}
+.voyage-day-sep::after {
+  content: '';
+  position: absolute;
+  left: -24px;
+  right: -12px;
+  top: 8px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(200,168,78,0.2), transparent 80%);
+}
 .voyage-entry::before {
   content: '';
   position: absolute;
@@ -538,6 +569,7 @@ body {
 .voyage-exam-name { color: var(--text-dim); font-size: 0.78rem; font-style: italic; }
 .voyage-score-line { margin-top: 4px; display: flex; align-items: baseline; gap: 4px; }
 .voyage-score-val { font-size: 1.2rem; font-weight: 700; color: var(--gold-bright); font-family: var(--font-serif); }
+.voyage-score-max { font-size: 0.8rem; color: var(--text-dim); font-weight: 400; }
 .voyage-score-label { font-size: 0.75rem; color: var(--text-dim); }
 
 /* ====== 模考分数区域（旧版兼容）====== */
@@ -705,6 +737,20 @@ body {
 .insights-toggle.expanded .toggle-arrow { transform: rotate(90deg); }
 .insights-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
 .insights-body.expanded { max-height: 500px; }
+
+/* ====== 月度目标 ====== */
+.monthly-goals-section { display: flex; flex-direction: column; gap: 8px; }
+.goal-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(212, 165, 116, 0.06); border: 1px solid rgba(212, 165, 116, 0.15); border-radius: 8px; font-size: 0.88rem; color: var(--text); }
+.goal-text { flex: 1; }
+.goal-delete { color: var(--text-dim); cursor: pointer; font-size: 0.85rem; padding: 2px 6px; border-radius: 4px; transition: all 0.2s; }
+.goal-delete:hover { color: var(--danger); background: rgba(201, 68, 68, 0.1); }
+.goal-input-row { display: flex; gap: 8px; }
+.goal-input-row input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,165,116,0.15); border-radius: 8px; padding: 8px 12px; color: var(--text-bright); font-size: 0.85rem; font-family: var(--font-sans); }
+.goal-input-row input:focus { outline: none; border-color: var(--gold); }
+.goal-input-row input:disabled { opacity: 0.4; }
+.btn-goal-add { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, rgba(180,155,90,0.85), rgba(160,135,75,0.75)); border: 1px solid rgba(212,165,116,0.2); color: var(--gold-bright); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.btn-goal-add:hover { transform: scale(1.05); }
+.btn-goal-add:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 /* --- 响应式 --- */
 @media (min-width: 600px) { .page-container { max-width: 520px; } }

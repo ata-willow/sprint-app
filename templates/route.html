@@ -82,10 +82,17 @@
       <div class="card-title">📜 航行时间线</div>
       {% if timeline %}
       <div class="voyage-timeline">
+        {% set prev_date = '' %}
         {% for item in timeline %}
+          {% if item.date != prev_date %}
+            {% if not loop.first %}
+            <div class="voyage-day-sep"></div>
+            {% endif %}
+            <div class="voyage-day-header">{{ item.date }}</div>
+            {% set prev_date = item.date %}
+          {% endif %}
           {% if item.timeline_type == 'study' %}
           <div class="voyage-entry voyage-study">
-            <div class="voyage-date">{{ item.date }}</div>
             <div class="voyage-content">
               <span class="voyage-subject">{{ item.subject }}</span>
               {% if item.unit %}<span class="voyage-unit">{{ item.unit }}</span>{% endif %}
@@ -101,14 +108,13 @@
           </div>
           {% elif item.timeline_type == 'mock' %}
           <div class="voyage-entry voyage-mock">
-            <div class="voyage-date">{{ item.date }}</div>
             <div class="voyage-content">
               <span class="voyage-mock-tag">🎯 模考</span>
               <span class="voyage-subject">{{ item.subject }}</span>
               {% if item.exam_name %}<span class="voyage-exam-name">{{ item.exam_name }}</span>{% endif %}
             </div>
             <div class="voyage-score-line">
-              <span class="voyage-score-val">{{ item.score }}</span>
+              <span class="voyage-score-val">{{ item.score }}{% if item.max_score %}<span class="voyage-score-max">/{{ item.max_score }}</span>{% endif %}</span>
               <span class="voyage-score-label">分</span>
             </div>
           </div>

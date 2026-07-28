@@ -206,6 +206,7 @@ def api_add_mock_score():
             score=float(data['score']),
             date=data.get('date', datetime.now().strftime('%Y-%m-%d')),
             exam_name=data.get('exam_name', None),
+            max_score=data.get('max_score', None),
         )
         return jsonify({'ok': True, 'id': score_id})
     except Exception as e:

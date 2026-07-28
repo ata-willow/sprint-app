@@ -11,7 +11,7 @@
 </head>
 <body>
   <div class="page-container">
-    <h2 class="animate-in" style="color:var(--gold);font-family:var(--font-serif);letter-spacing:2px;margin-bottom:16px;">🪶 复盘</h2>
+    <h2 class="animate-in" style="color:var(--gold);font-family:var(--font-serif);letter-spacing:2px;margin-bottom:16px;">🔖 复盘</h2>
 
     <!-- 月度日历 -->
     <div class="card animate-in animate-delay-1">
@@ -34,9 +34,22 @@
       <div class="cal-mocks" id="cal-mocks" style="display:none;"></div>
     </div>
 
-    <!-- 月度AI复盘 -->
+    <!-- 月度目标 -->
     <div class="card animate-in animate-delay-2">
-      <div class="card-title">🧠 月度AI复盘</div>
+      <div class="card-title"> 本月目标</div>
+      <div class="monthly-goals-section">
+        <div id="goals-list"></div>
+        <div class="goal-input-row">
+          <input type="text" id="goal-input" placeholder="输入一个大主题目标…" maxlength="60">
+          <button class="btn-goal-add" id="btn-goal-add" onclick="addGoal()">+</button>
+        </div>
+        <p class="text-dim" style="font-size:0.7rem;margin-top:6px;">最多3个目标，聚焦比数量重要</p>
+      </div>
+    </div>
+
+    <!-- 月度AI复盘 -->
+    <div class="card animate-in animate-delay-3">
+      <div class="card-title">🔍 月度AI复盘</div>
       <div class="monthly-review-section">
         <div class="monthly-review-controls">
           <select id="review-month" class="review-month-select"></select>
@@ -117,6 +130,7 @@
       if (calMonth > 11) { calMonth = 0; calYear++; }
       if (calMonth < 0) { calMonth = 11; calYear--; }
       loadCalendar(calYear, calMonth);
+      loadGoals();
     }
 
     async function loadCalendar(year, month) {
@@ -129,10 +143,16 @@
 
       try {
         const res = await fetch(`/api/monthly-calendar?month=${ym}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-        renderCalendar(year, month, data.days, data.scores);
+        if (data.days) {
+          renderCalendar(year, month, data.days, data.scores || []);
+        } else {
+          throw new Error('No days data');
+        }
       } catch (err) {
-        grid.innerHTML = '<p class="text-dim" style="font-size:0.8rem;">加载失败</p>';
+        console.error('Calendar load error:', err);
+        grid.innerHTML = '<p class="text-dim" style="font-size:0.8rem;">加载失败，请下拉刷新重试</p>';
       }
     }
 
@@ -192,7 +212,8 @@
           cell.appendChild(hoursLabel);
 
           // 科目关键词（最多2个）
-          const subjNames = [...new Set(dayData.subjects.map(s => s.subject))];
+          const subjList = dayData.subjects || [];
+          const subjNames = [...new Set(subjList.map(s => s.subject))];
           if (subjNames.length) {
             const subjLabel = document.createElement('span');
             subjLabel.className = 'cal-subj';
@@ -294,6 +315,73 @@
       html += '</div>';
       return html;
     }
+
+    // ====== 月度目标 ======
+    function getGoalKey() {
+      return `${calYear}-${String(calMonth + 1).padStart(2, '0')}`;
+    }
+    function loadGoals() {
+      const key = getGoalKey();
+      const stored = localStorage.getItem('monthly_goals_' + key);
+      const goals = stored ? JSON.parse(stored) : [];
+      renderGoals(goals);
+    }
+    function saveGoals(goals) {
+      const key = getGoalKey();
+      localStorage.setItem('monthly_goals_' + key, JSON.stringify(goals));
+    }
+    function renderGoals(goals) {
+      const list = document.getElementById('goals-list');
+      list.innerHTML = '';
+      goals.forEach((g, i) => {
+        const el = document.createElement('div');
+        el.className = 'goal-item';
+        el.innerHTML = `<span class="goal-text">${g}</span><span class="goal-delete" onclick="removeGoal(${i})">✕</span>`;
+        list.appendChild(el);
+      });
+      const input = document.getElementById('goal-input');
+      if (goals.length >= 3) {
+        input.disabled = true;
+        input.placeholder = '已达上限（3个）';
+        document.getElementById('btn-goal-add').disabled = true;
+      } else {
+        input.disabled = false;
+        input.placeholder = '输入一个大主题目标…';
+        document.getElementById('btn-goal-add').disabled = false;
+      }
+    }
+    function addGoal() {
+      const input = document.getElementById('goal-input');
+      const text = input.value.trim();
+      if (!text) return;
+      const key = getGoalKey();
+      const stored = localStorage.getItem('monthly_goals_' + key);
+      const goals = stored ? JSON.parse(stored) : [];
+      if (goals.length >= 3) return;
+      goals.push(text);
+      saveGoals(goals);
+      input.value = '';
+      renderGoals(goals);
+    }
+    function removeGoal(index) {
+      const key = getGoalKey();
+      const stored = localStorage.getItem('monthly_goals_' + key);
+      const goals = stored ? JSON.parse(stored) : [];
+      goals.splice(index, 1);
+      saveGoals(goals);
+      renderGoals(goals);
+    }
+    // 回车添加
+    document.getElementById('goal-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addGoal(); }
+    });
+    // 月份切换时加载目标
+    const origChangeMonth = changeMonth;
+    // override changeMonth to also load goals
+    const _origChangeMonth = window.changeMonth;
+
+    // 初始加载目标
+    loadGoals();
 
     // Service Worker
     if ('serviceWorker' in navigator) {
